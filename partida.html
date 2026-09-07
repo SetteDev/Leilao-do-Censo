@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Rodada aberta no Painel do leiloeiro." />
+    <title>Rodada em andamento — Leilão do Censo</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="entry-page match-page">
+      <div class="background-pattern background-pattern--top" aria-hidden="true"></div>
+      <div class="background-pattern background-pattern--bottom" aria-hidden="true"></div>
+      <div class="background-lines" aria-hidden="true"></div>
+
+      <section class="match-shell" aria-labelledby="match-title">
+        <header class="match-header">
+          <a class="back-link" href="leiloeiro.html">← Configuração</a>
+          <div>
+            <p class="section-label">Painel do leiloeiro</p>
+            <h1 id="match-title">Lote em <span>disputa</span></h1>
+          </div>
+          <span class="auction-status"><span aria-hidden="true"></span> Leilão aberto</span>
+        </header>
+
+        <div class="match-layout">
+          <section class="auction-board" aria-label="Controle da rodada">
+            <div class="lot-overview">
+              <div>
+                <p class="section-label">Lote sorteado</p>
+                <strong class="lot-number">07</strong>
+              </div>
+              <div class="lot-value">
+                <span>Valor do lote</span>
+                <strong>R$ 250</strong>
+                <small>anunciado às equipes</small>
+              </div>
+            </div>
+
+            <form class="bid-form" aria-labelledby="register-bid-title">
+              <div class="form-heading">
+                <div>
+                  <p class="section-label">Após os lances orais</p>
+                  <h2 id="register-bid-title">Lance final</h2>
+                </div>
+              </div>
+              <div class="bid-fields">
+                <label>Equipe vencedora
+                  <select id="final-team" aria-label="Equipe que deu o lance final">
+                    <option value="">Selecione a equipe</option>
+                    <option>Equipe 1</option>
+                    <option>Equipe 2</option>
+                    <option>Equipe 3</option>
+                    <option>Equipe 4</option>
+                  </select>
+                </label>
+                <label>Valor final
+                  <input id="final-bid" type="number" min="0" step="1" inputmode="numeric" placeholder="Ex.: 300" required />
+                </label>
+                <button id="confirm-final-bid" class="record-bid" type="button">Confirmar lance <span aria-hidden="true">→</span></button>
+              </div>
+            </form>
+
+            <section class="private-question" aria-labelledby="question-title">
+              <div class="question-heading">
+                <div>
+                  <p class="section-label">Conteúdo do lote</p>
+                  <h2 id="question-title">Pergunta da rodada</h2>
+                </div>
+                <span id="question-status" class="private-badge">Privada — pronta para liberação</span>
+              </div>
+              <div class="question-meta"><span>Múltipla escolha</span></div>
+              <p>Em qual fase da transição demográfica a taxa de natalidade permanece elevada enquanto a taxa de mortalidade cai acentuadamente?</p>
+              <ol class="question-options" type="A">
+                <li>Fase 1</li>
+                <li>Fase 2</li>
+                <li>Fase 3</li>
+                <li>Fase 4</li>
+              </ol>
+              <p class="reference-answer"><strong>Resposta de referência:</strong> Fase 2.</p>
+              <p class="question-note">A pergunta só aparecerá no Painel da disputa após a confirmação do lance final.</p>
+            </section>
+
+            <div class="round-controls">
+              <button id="release-question" class="release-question" type="button" disabled>Liberar pergunta no Painel da disputa <span aria-hidden="true">→</span></button>
+              <button id="start-timer" class="start-timer" type="button" disabled>Iniciar tempo <span data-timer-display>00:45</span></button>
+            </div>
+            <p id="timer-message" class="timer-message" aria-live="polite">Confirme o lance e libere a pergunta para iniciar o tempo.</p>
+
+            <section class="result-panel" aria-labelledby="result-title">
+              <div>
+                <p class="section-label">Após a resposta da equipe</p>
+                <h2 id="result-title">Marcar resultado</h2>
+              </div>
+              <div class="result-actions">
+                <button class="answer-correct" type="button" data-result="correct" disabled>Acertou</button>
+                <button class="answer-wrong" type="button" data-result="wrong" disabled>Errou</button>
+              </div>
+              <button id="prepare-next-lot" class="prepare-next-lot" type="button" hidden>Preparar próximo lote <span aria-hidden="true">→</span></button>
+            </section>
+          </section>
+
+          <aside class="teams-summary" aria-labelledby="summary-title">
+            <div class="summary-heading">
+              <p class="section-label">Visão privada</p>
+              <h2 id="summary-title">Resumo das equipes</h2>
+            </div>
+            <div class="summary-team summary-team--coral" data-team-summary="Equipe 1">
+              <span class="team-dot" aria-hidden="true"></span><strong data-team-name>Equipe 1</strong>
+              <dl><div><dt>Saldo</dt><dd data-team-balance>R$ 1.000</dd></div><div><dt>Lotes</dt><dd data-team-lots>0</dd></div></dl>
+            </div>
+            <div class="summary-team summary-team--teal" data-team-summary="Equipe 2">
+              <span class="team-dot" aria-hidden="true"></span><strong data-team-name>Equipe 2</strong>
+              <dl><div><dt>Saldo</dt><dd data-team-balance>R$ 1.000</dd></div><div><dt>Lotes</dt><dd data-team-lots>0</dd></div></dl>
+            </div>
+            <div class="summary-team summary-team--lime" data-team-summary="Equipe 3">
+              <span class="team-dot" aria-hidden="true"></span><strong data-team-name>Equipe 3</strong>
+              <dl><div><dt>Saldo</dt><dd data-team-balance>R$ 1.000</dd></div><div><dt>Lotes</dt><dd data-team-lots>0</dd></div></dl>
+            </div>
+            <div class="summary-team summary-team--indigo" data-team-summary="Equipe 4">
+              <span class="team-dot" aria-hidden="true"></span><strong data-team-name>Equipe 4</strong>
+              <dl><div><dt>Saldo</dt><dd data-team-balance>R$ 1.000</dd></div><div><dt>Lotes</dt><dd data-team-lots>0</dd></div></dl>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+    <script src="app.js" defer></script>
+  </body>
+</html>

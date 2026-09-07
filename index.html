@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Página de entrada do jogo educativo Leilão do Censo."
+    />
+    <title>Leilão do Censo</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="entry-page">
+      <div class="background-pattern background-pattern--top" aria-hidden="true"></div>
+      <div class="background-pattern background-pattern--bottom" aria-hidden="true"></div>
+      <div class="background-lines" aria-hidden="true"></div>
+
+      <section class="entry" aria-labelledby="page-title">
+        <header class="hero">
+          <h1 id="page-title">Leilão do <span>Censo</span></h1>
+        </header>
+
+        <section class="access" aria-labelledby="access-title">
+          <h2 id="access-title">Escolha como deseja abrir a partida</h2>
+          <div class="access-options">
+            <a class="access-card access-card--auctioneer" href="leiloeiro.html">
+              <span class="card-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none">
+                  <path d="m31 26 17 17" stroke="currentColor" stroke-width="5" stroke-linecap="round" />
+                  <path d="m25 15 20 20-8 8-20-20 8-8Z" stroke="currentColor" stroke-width="4" stroke-linejoin="round" />
+                  <path d="m13 27 12-12 8 8-12 12-8-8ZM39 41l8-8 7 7-8 8-7-7Z" stroke="currentColor" stroke-width="4" stroke-linejoin="round" />
+                  <path d="M9 56h29" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
+                </svg>
+              </span>
+              <span class="card-copy">
+                <strong>Painel do leiloeiro</strong>
+                <small>Organize a partida e conduza os lotes.</small>
+              </span>
+              <span class="card-arrow" aria-hidden="true">→</span>
+            </a>
+
+            <a class="access-card access-card--dispute" href="disputa.html">
+              <span class="card-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none">
+                  <rect x="8" y="10" width="48" height="34" rx="3" stroke="currentColor" stroke-width="4" />
+                  <path d="M20 55h24M32 44v11M20 35V25M31 35V18M42 35V13" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
+                </svg>
+              </span>
+              <span class="card-copy">
+                <strong>Painel da disputa</strong>
+                <small>Acompanhe lotes, perguntas e resultados.</small>
+              </span>
+              <span class="card-arrow" aria-hidden="true">→</span>
+            </a>
+          </div>
+        </section>
+
+        <footer class="topics" aria-label="Temas do jogo">
+          <span>Demografia</span>
+          <span>Indicadores demográficos</span>
+          <span>Crescimento vegetativo</span>
+          <span>Densidade demográfica</span>
+          <span>Transição demográfica</span>
+        </footer>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Painel público da disputa do Leilão do Censo." />
+    <title>Painel da disputa — Leilão do Censo</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="entry-page public-page">
+      <div class="background-pattern background-pattern--top" aria-hidden="true"></div>
+      <div class="background-pattern background-pattern--bottom" aria-hidden="true"></div>
+      <div class="background-lines" aria-hidden="true"></div>
+
+      <section class="public-shell" data-public-state="waiting" aria-labelledby="public-title">
+        <header class="public-header">
+          <p class="section-label">Leilão do Censo</p>
+          <h1 id="public-title">Painel da <span>disputa</span></h1>
+        </header>
+
+        <section class="public-waiting" data-public-waiting>
+          <h2>Aguardando a liberação do lote</h2>
+          <p>O leiloeiro anunciará o valor e a equipe que responderá.</p>
+          <section class="public-ranking" aria-labelledby="public-ranking-title">
+            <p class="section-label" id="public-ranking-title">Equipes na disputa</p>
+            <ul data-public-ranking></ul>
+          </section>
+        </section>
+
+        <section class="public-round" data-public-round hidden aria-labelledby="public-question-title">
+          <div class="public-round-top">
+            <div class="public-lot-info"><p class="section-label">Lote 07</p><strong>R$ 250</strong><h2>Rodada em andamento</h2></div>
+            <div class="public-timer" data-public-timer aria-live="polite">00:45</div>
+          </div>
+          <div class="public-winner"><span class="team-dot team-dot--teal" aria-hidden="true"></span><strong data-public-team>Equipe 1</strong><span>assumiu o lote por <b data-public-bid>R$ 300</b></span></div>
+          <article class="public-question">
+            <h2 id="public-question-title">Em qual fase da transição demográfica a taxa de natalidade permanece elevada enquanto a taxa de mortalidade cai acentuadamente?</h2>
+            <ol class="public-options"><li>Fase 1</li><li>Fase 2</li><li>Fase 3</li><li>Fase 4</li></ol>
+          </article>
+          <p class="public-timer-note" data-public-timer-note>Aguardando o início do tempo.</p>
+        </section>
+
+        <section class="public-result" data-public-result hidden aria-live="polite">
+          <p class="section-label">Resultado da rodada</p>
+          <h2 data-public-result-title></h2>
+          <p data-public-result-message></p>
+          <div class="public-recipients" data-public-recipients hidden>
+            <p>Valor recebido pelas outras equipes:</p>
+            <strong data-public-share></strong>
+          </div>
+          <p class="public-correct-answer" data-public-correct-answer hidden></p>
+        </section>
+      </section>
+    </main>
+    <script src="app.js" defer></script>
+  </body>
+</html>

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Configuração da partida do Leilão do Censo." />
+    <title>Painel do leiloeiro — Leilão do Censo</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="entry-page setup-page">
+      <div class="background-pattern background-pattern--top" aria-hidden="true"></div>
+      <div class="background-pattern background-pattern--bottom" aria-hidden="true"></div>
+      <div class="background-lines" aria-hidden="true"></div>
+
+      <section class="setup" aria-labelledby="setup-title">
+        <header class="setup-header">
+          <a class="back-link" href="index.html">← Voltar</a>
+          <p class="section-label">Painel do leiloeiro</p>
+          <h1 id="setup-title">Prepare a <span>partida</span></h1>
+          <p>Defina as quatro equipes antes de colocar os lotes em disputa.</p>
+        </header>
+
+        <div class="setup-layout">
+          <form class="teams-form" aria-labelledby="teams-title">
+            <div class="form-heading">
+              <div>
+                <p class="section-label">Etapa 1 de 1</p>
+                <h2 id="teams-title">Equipes participantes</h2>
+              </div>
+              <span class="team-count">4 equipes</span>
+            </div>
+
+            <div class="team-grid">
+              <fieldset class="team-field team-field--coral">
+                <legend>Equipe 1</legend>
+                <label for="team-1">Nome da equipe</label>
+                <div class="team-input-row">
+                  <input id="team-1" name="team-1" type="text" value="Equipe 1" maxlength="26" />
+                  <label class="color-picker" for="color-1">
+                    <span class="sr-only">Cor da Equipe 1</span>
+                    <input id="color-1" name="color-1" type="color" value="#f56554" />
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset class="team-field team-field--teal">
+                <legend>Equipe 2</legend>
+                <label for="team-2">Nome da equipe</label>
+                <div class="team-input-row">
+                  <input id="team-2" name="team-2" type="text" value="Equipe 2" maxlength="26" />
+                  <label class="color-picker" for="color-2">
+                    <span class="sr-only">Cor da Equipe 2</span>
+                    <input id="color-2" name="color-2" type="color" value="#087f8c" />
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset class="team-field team-field--lime">
+                <legend>Equipe 3</legend>
+                <label for="team-3">Nome da equipe</label>
+                <div class="team-input-row">
+                  <input id="team-3" name="team-3" type="text" value="Equipe 3" maxlength="26" />
+                  <label class="color-picker" for="color-3">
+                    <span class="sr-only">Cor da Equipe 3</span>
+                    <input id="color-3" name="color-3" type="color" value="#c8d82b" />
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset class="team-field team-field--indigo">
+                <legend>Equipe 4</legend>
+                <label for="team-4">Nome da equipe</label>
+                <div class="team-input-row">
+                  <input id="team-4" name="team-4" type="text" value="Equipe 4" maxlength="26" />
+                  <label class="color-picker" for="color-4">
+                    <span class="sr-only">Cor da Equipe 4</span>
+                    <input id="color-4" name="color-4" type="color" value="#151d66" />
+                  </label>
+                </div>
+              </fieldset>
+            </div>
+
+            <a class="start-button" href="partida.html">
+              <span>Iniciar partida</span>
+              <span aria-hidden="true">→</span>
+            </a>
+          </form>
+
+          <aside class="rules-card" aria-labelledby="rules-title">
+            <p class="section-label">Resumo da partida</p>
+            <h2 id="rules-title">Regras em jogo</h2>
+            <dl>
+              <div>
+                <dt>Saldo inicial</dt>
+                <dd>R$ 1.000</dd>
+              </div>
+              <div>
+                <dt>Objetivo</dt>
+                <dd>Conquistar o maior número de lotes.</dd>
+              </div>
+            </dl>
+            <p class="rules-note">Os saldos permanecem privados durante a partida.</p>
+          </aside>
+        </div>
+      </section>
+    </main>
+    <script>
+      document.querySelectorAll('input[type="color"]').forEach((input) => {
+        input.addEventListener("input", () => {
+          input.closest(".team-field").style.setProperty("--team-color", input.value);
+        });
+      });
+    </script>
+  </body>
+</html>
