@@ -23,12 +23,19 @@
 
         <div class="setup-layout">
           <form class="teams-form" aria-labelledby="teams-title">
+            <div class="active-game-choice" data-active-game-choice hidden>
+              <div>
+                <p class="section-label">Partida em andamento</p>
+                <strong>Você pode retomar a rodada atual ou preparar uma nova partida.</strong>
+              </div>
+              <a class="return-game-button" href="partida.html">Voltar para a partida <span aria-hidden="true">→</span></a>
+            </div>
             <div class="form-heading">
               <div>
                 <p class="section-label">Etapa 1 de 1</p>
                 <h2 id="teams-title">Equipes participantes</h2>
               </div>
-              <span class="team-count">4 equipes</span>
+              <span class="team-count" data-setup-action-label>4 equipes</span>
             </div>
 
             <div class="team-grid">
@@ -81,10 +88,11 @@
               </fieldset>
             </div>
 
-            <a class="start-button" href="partida.html">
-              <span>Iniciar partida</span>
+            <button id="start-game" class="start-button" type="button">
+              <span data-start-game-label>Iniciar partida</span>
               <span aria-hidden="true">→</span>
-            </a>
+            </button>
+            <p id="setup-message" class="setup-message" aria-live="polite"></p>
           </form>
 
           <aside class="rules-card" aria-labelledby="rules-title">
@@ -100,7 +108,7 @@
                 <dd>Conquistar o maior número de lotes.</dd>
               </div>
             </dl>
-            <p class="rules-note">Os saldos permanecem privados durante a partida.</p>
+            <p class="rules-note">Os saldos são exibidos no Painel da disputa durante a partida.</p>
           </aside>
         </div>
       </section>
@@ -112,5 +120,6 @@
         });
       });
     </script>
+    <script src="app.js" defer></script>
   </body>
 </html>
