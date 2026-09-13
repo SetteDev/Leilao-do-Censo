@@ -27,7 +27,8 @@ function parseQuestion(source) {
       key = property[1];
       const value = unquote(property[2]);
       if (key === "alternativas") question.alternativas = [];
-      else question[key] = key === "valor_lote" ? Number(value) : value;
+      else if (key === "valor_lote") question.valor_lote = Number(value);
+      else question[key] = value;
       return;
     }
     const item = line.match(/^\s*-\s*(.*)$/);

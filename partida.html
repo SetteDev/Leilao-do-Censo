@@ -33,7 +33,8 @@
               <div class="lot-value">
                 <span>Valor do lote</span>
                 <strong data-lot-value>R$ 250</strong>
-                <small>anunciado às equipes</small>
+                <small data-value-visibility>oculto das equipes</small>
+                <button id="reveal-value" class="reveal-value" type="button" hidden>Revelar valor no Painel</button>
               </div>
             </div>
 
@@ -68,9 +69,9 @@
               </div>
               <div class="question-meta"><span data-question-modality>Múltipla escolha</span></div>
               <p data-question-text>Em qual fase da transição demográfica a taxa de natalidade permanece elevada enquanto a taxa de mortalidade cai acentuadamente?</p>
-              <ol class="question-options" data-question-options type="A"></ol>
+              <ol class="question-options" data-question-options></ol>
               <p class="reference-answer"><strong>Resposta de referência:</strong> <span data-reference-answer>Fase 2.</span></p>
-              <p class="question-note">A pergunta só aparecerá no Painel da disputa após a confirmação do lance final.</p>
+              <p class="question-note">A pergunta só aparece no Painel da disputa após a confirmação do lance. O valor fica oculto — o leiloeiro decide quando (e se) revelá-lo.</p>
             </section>
 
             <div class="round-controls">
@@ -89,22 +90,44 @@
                 <button class="answer-wrong" type="button" data-result="wrong" disabled>Errou</button>
               </div>
               <div class="approximation-result" data-approximation-result hidden>
-                <p>Selecione todas as equipes que ficaram igualmente mais próximas:</p>
-                <div class="approximation-winners" data-approximation-winners role="group" aria-label="Equipe ou equipes mais próximas"></div>
-                <small class="approximation-help">Selecione mais de uma equipe em caso de empate.</small>
-                <button id="confirm-approximation" class="answer-correct" type="button" disabled>Registrar equipe(s) mais próxima(s)</button>
+                <p>Registre resposta de cada equipe. Sistema calculará automaticamente quem ficou mais próxima.</p>
+                <div class="approximation-answers" data-approximation-answers></div>
+                <button id="confirm-approximation" class="answer-correct" type="button" disabled>Calcular resultado da aproximação</button>
               </div>
               <button id="prepare-next-lot" class="prepare-next-lot" type="button" hidden>Preparar próximo lote <span aria-hidden="true">→</span></button>
+              <button id="release-approximation-result" class="prepare-next-lot" type="button" hidden>Liberar resposta correta e equipe vencedora</button>
+              <button id="start-another-game" class="prepare-next-lot" type="button" hidden>Começar outra partida</button>
+            </section>
+            <section class="next-lot" data-next-lot-chooser hidden aria-labelledby="next-lot-title">
+              <div class="form-heading">
+                <div>
+                  <p class="section-label">Próximo lote</p>
+                  <h2 id="next-lot-title">Escolha modalidade da rodada</h2>
+                </div>
+              </div>
+              <div class="category-chips" data-category-chips></div>
+              <div class="next-lot-actions">
+                <button id="confirm-next-lot" class="prepare-next-lot" type="button" disabled>Confirmar próximo lote <span aria-hidden="true">→</span></button>
+                <button id="cancel-chooser" class="cancel-chooser" type="button">Cancelar</button>
+              </div>
             </section>
           </section>
 
-          <aside class="teams-summary" aria-labelledby="summary-title">
-            <div class="summary-heading">
-              <p class="section-label">Situação das equipes</p>
-              <h2 id="summary-title">Resumo das equipes</h2>
-            </div>
-            <div data-teams-summary-list></div>
-          </aside>
+          <div class="match-sidebar">
+            <aside class="teams-summary" aria-labelledby="summary-title">
+              <div class="summary-heading">
+                <p class="section-label">Situação das equipes</p>
+                <h2 id="summary-title">Resumo das equipes</h2>
+              </div>
+              <div data-teams-summary-list></div>
+            </aside>
+            <aside class="match-end-panel" data-match-end-panel>
+              <p class="section-label">Encerramento</p>
+              <h2>Finalizar partida</h2>
+              <p>Disponível após resultado da rodada.</p>
+              <button id="end-game" class="end-game" type="button" disabled>Encerrar partida</button>
+            </aside>
+          </div>
         </div>
       </section>
     </main>

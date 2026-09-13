@@ -88,6 +88,27 @@
               </fieldset>
             </div>
 
+            <div class="game-config" aria-labelledby="config-title">
+              <div class="form-heading">
+                <div>
+                  <p class="section-label">Opções da partida</p>
+                  <h2 id="config-title">Configurações</h2>
+                </div>
+              </div>
+              <div class="config-grid">
+                <label class="config-toggle">
+                  <input id="config-ocultar-valor" type="checkbox" checked />
+                  Ocultar o valor dos lotes das equipes
+                </label>
+                <label>Teto de lance (% do saldo)
+                  <input id="config-cap-lance" type="number" min="0" max="100" value="50" />
+                </label>
+                <label>Duração do tempo (s)
+                  <input id="config-timer-seconds" type="number" min="5" value="45" />
+                </label>
+              </div>
+              <small class="config-help">Com o valor oculto, as equipes não veem o valor do lote. Coloque o teto de lance em 0 para não limitar percentual do lance; saldo ainda limita valor.</small>
+            </div>
             <button id="start-game" class="start-button" type="button">
               <span data-start-game-label>Iniciar partida</span>
               <span aria-hidden="true">→</span>
