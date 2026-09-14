@@ -7,8 +7,23 @@
     <title>Rodada em andamento — Leilão do Censo</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
-    <main class="entry-page match-page">
+  <body data-auctioneer-access>
+    <section class="access-gate entry-page" data-access-gate aria-labelledby="access-title">
+      <div class="background-pattern background-pattern--top" aria-hidden="true"></div>
+      <div class="background-pattern background-pattern--bottom" aria-hidden="true"></div>
+      <div class="background-lines" aria-hidden="true"></div>
+      <form class="access-card" data-access-form>
+        <p class="section-label">Leilão do Censo</p>
+        <h1 id="access-title">Painel do <span>leiloeiro</span></h1>
+        <p>Digite a senha para conduzir a rodada em andamento.</p>
+        <label for="access-password">Senha
+          <input id="access-password" type="password" autocomplete="current-password" required autofocus />
+        </label>
+        <button class="start-button" type="submit">Entrar <span aria-hidden="true">→</span></button>
+        <p class="setup-message" data-access-message aria-live="polite"></p>
+      </form>
+    </section>
+    <main class="entry-page match-page" data-private-content hidden>
       <div class="background-pattern background-pattern--top" aria-hidden="true"></div>
       <div class="background-pattern background-pattern--bottom" aria-hidden="true"></div>
       <div class="background-lines" aria-hidden="true"></div>
@@ -19,6 +34,7 @@
           <div>
             <p class="section-label">Painel do leiloeiro</p>
             <h1 id="match-title">Lote em <span>disputa</span></h1>
+            <p class="private-sync-status" data-private-sync-status role="status">Conectando os painéis…</p>
           </div>
           <span class="auction-status"><span aria-hidden="true"></span> Leilão aberto</span>
         </header>
@@ -30,7 +46,7 @@
                 <p class="section-label">Lote sorteado</p>
                 <strong class="lot-number" data-lot-number>07</strong>
               </div>
-              <div class="lot-value">
+              <div class="lot-value" data-lot-value-area>
                 <span>Valor do lote</span>
                 <strong data-lot-value>R$ 250</strong>
                 <small data-value-visibility>oculto das equipes</small>
@@ -71,7 +87,7 @@
               <p data-question-text>Em qual fase da transição demográfica a taxa de natalidade permanece elevada enquanto a taxa de mortalidade cai acentuadamente?</p>
               <ol class="question-options" data-question-options></ol>
               <p class="reference-answer"><strong>Resposta de referência:</strong> <span data-reference-answer>Fase 2.</span></p>
-              <p class="question-note">A pergunta só aparece no Painel da disputa após a confirmação do lance. O valor fica oculto — o leiloeiro decide quando (e se) revelá-lo.</p>
+              <p class="question-note" data-question-note>A pergunta só aparece no Painel da disputa após a confirmação do lance. O valor fica oculto — o leiloeiro decide quando (e se) revelá-lo.</p>
             </section>
 
             <div class="round-controls">
@@ -90,7 +106,6 @@
                 <button class="answer-wrong" type="button" data-result="wrong" disabled>Errou</button>
               </div>
               <div class="approximation-result" data-approximation-result hidden>
-                <p>Registre resposta de cada equipe. Sistema calculará automaticamente quem ficou mais próxima.</p>
                 <div class="approximation-answers" data-approximation-answers></div>
                 <button id="confirm-approximation" class="answer-correct" type="button" disabled>Calcular resultado da aproximação</button>
               </div>

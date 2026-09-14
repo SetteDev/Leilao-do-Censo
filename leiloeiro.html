@@ -7,8 +7,23 @@
     <title>Painel do leiloeiro — Leilão do Censo</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
-    <main class="entry-page setup-page">
+  <body data-auctioneer-access>
+    <section class="access-gate entry-page" data-access-gate aria-labelledby="access-title">
+      <div class="background-pattern background-pattern--top" aria-hidden="true"></div>
+      <div class="background-pattern background-pattern--bottom" aria-hidden="true"></div>
+      <div class="background-lines" aria-hidden="true"></div>
+      <form class="access-card" data-access-form>
+        <p class="section-label">Leilão do Censo</p>
+        <h1 id="access-title">Painel do <span>leiloeiro</span></h1>
+        <p>Digite a senha para preparar ou conduzir a partida.</p>
+        <label for="access-password">Senha
+          <input id="access-password" type="password" autocomplete="current-password" required autofocus />
+        </label>
+        <button class="start-button" type="submit">Entrar <span aria-hidden="true">→</span></button>
+        <p class="setup-message" data-access-message aria-live="polite"></p>
+      </form>
+    </section>
+    <main class="entry-page setup-page" data-private-content hidden>
       <div class="background-pattern background-pattern--top" aria-hidden="true"></div>
       <div class="background-pattern background-pattern--bottom" aria-hidden="true"></div>
       <div class="background-lines" aria-hidden="true"></div>
@@ -46,7 +61,7 @@
                   <input id="team-1" name="team-1" type="text" value="Equipe 1" maxlength="26" />
                   <label class="color-picker" for="color-1">
                     <span class="sr-only">Cor da Equipe 1</span>
-                    <input id="color-1" name="color-1" type="color" value="#f56554" />
+                    <input id="color-1" name="color-1" type="color" value="#bf4135" />
                   </label>
                 </div>
               </fieldset>
@@ -58,7 +73,7 @@
                   <input id="team-2" name="team-2" type="text" value="Equipe 2" maxlength="26" />
                   <label class="color-picker" for="color-2">
                     <span class="sr-only">Cor da Equipe 2</span>
-                    <input id="color-2" name="color-2" type="color" value="#087f8c" />
+                    <input id="color-2" name="color-2" type="color" value="#006e7b" />
                   </label>
                 </div>
               </fieldset>
@@ -70,7 +85,7 @@
                   <input id="team-3" name="team-3" type="text" value="Equipe 3" maxlength="26" />
                   <label class="color-picker" for="color-3">
                     <span class="sr-only">Cor da Equipe 3</span>
-                    <input id="color-3" name="color-3" type="color" value="#c8d82b" />
+                    <input id="color-3" name="color-3" type="color" value="#687500" />
                   </label>
                 </div>
               </fieldset>

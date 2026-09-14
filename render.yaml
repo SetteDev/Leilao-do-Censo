@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: leilao-do-censo
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    plan: free

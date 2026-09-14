@@ -1,7 +1,7 @@
 ---
 id: "01"
 modalidade: multipla_escolha
-valor_lote: 250
+valor_lote: 300
 enunciado: "Em determinado país ocorreram 800 mil nascimentos e 500 mil mortes durante um ano. Desconsiderando as migrações, o crescimento vegetativo foi de:"
 alternativas:
   - "300 mil habitantes"

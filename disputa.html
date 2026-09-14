@@ -17,6 +17,7 @@
         <header class="public-header">
           <p class="section-label">Leilão do Censo</p>
           <h1 id="public-title">Painel da <span>disputa</span></h1>
+          <p class="public-sync-status" data-public-sync-status role="status" aria-live="polite">Conectando à partida…</p>
         </header>
 
         <section class="public-waiting" data-public-waiting>
@@ -37,9 +38,16 @@
           <p>O leiloeiro está preparando nova disputa.</p>
         </section>
 
+        <section class="public-failure" data-public-failure hidden role="alert" aria-labelledby="public-failure-title">
+          <p class="section-label">Painel indisponível</p>
+          <h2 id="public-failure-title">Não foi possível acompanhar a partida</h2>
+          <p data-public-failure-message>Verifique a conexão e tente novamente.</p>
+          <button id="retry-public-connection" type="button">Tentar reconectar</button>
+        </section>
+
         <section class="public-round" data-public-round hidden aria-labelledby="public-question-title">
           <div class="public-round-top">
-            <div class="public-lot-info"><p class="section-label">Lote <span data-lot-number>07</span></p><strong data-lot-value>R$ ?</strong><h2>Rodada em andamento</h2></div>
+            <div class="public-lot-info"><div data-public-lot-value-area><p class="section-label">Lote <span data-lot-number>07</span></p><strong data-lot-value>R$ ?</strong></div><h2>Rodada em andamento</h2></div>
             <div class="public-timer" data-public-timer aria-live="polite">00:45</div>
           </div>
           <div class="public-winner" data-public-round-context></div>
@@ -49,7 +57,7 @@
           </article>
           <p class="public-timer-note" data-public-timer-note>Aguardando o início do tempo.</p>
           <section class="public-approximation-answers" data-public-approximation-answers hidden aria-labelledby="public-approximation-answers-title">
-            <p class="section-label" id="public-approximation-answers-title">Respostas das equipes</p>
+            <p class="section-label" id="public-approximation-answers-title">Respostas e apostas das equipes</p>
             <ul data-public-approximation-answer-list></ul>
           </section>
         </section>
@@ -68,7 +76,6 @@
         <section class="public-final" data-final-ranking hidden aria-labelledby="final-title">
           <p class="section-label">Fim da partida</p>
           <h1 id="final-title">Ranking final</h1>
-          <p class="public-final-note">A classificação considera primeiro os lotes e, em caso de empate, o saldo.</p>
           <ol class="final-list" data-final-list></ol>
         </section>
       </section>
