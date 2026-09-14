@@ -626,22 +626,28 @@ h1 span { color: var(--teal); }
 }
 
 .access-gate { place-items: center; padding: 24px; }
-.access-card {
+.password-gate-card {
   position: relative;
   z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
   width: min(100%, 430px);
-  padding: clamp(28px, 6vw, 48px);
+  min-height: 0;
+  padding: clamp(30px, 6vw, 46px);
   border: 1px solid var(--line);
-  border-radius: 22px;
+  border-radius: 16px;
+  color: var(--ink);
+  text-align: left;
   background: rgba(252, 250, 244, 0.94);
   box-shadow: 0 20px 55px rgba(21, 29, 102, 0.12);
 }
-.access-card h1 { margin: 0; font-size: clamp(2.4rem, 9vw, 4.2rem); }
-.access-card h1 span { color: var(--teal); }
-.access-card > p:not(.section-label) { margin: 18px 0 26px; color: var(--muted); line-height: 1.5; }
-.access-card label { display: grid; gap: 8px; font-weight: 700; }
-.access-card input { width: 100%; min-height: 48px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; color: var(--ink); background: #fff; font: inherit; }
-.access-card .start-button { margin-top: 20px; }
+.password-gate-card h1 { margin: 0; font-size: clamp(2.35rem, 8vw, 3.65rem); letter-spacing: -0.04em; line-height: 0.93; }
+.password-gate-card h1 span { color: var(--teal); }
+.password-gate-card > p { margin: 18px 0 28px; color: var(--muted); line-height: 1.5; }
+.password-gate-card label { display: grid; gap: 8px; font-weight: 700; }
+.password-gate-card input { width: 100%; min-height: 48px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; color: var(--ink); background: #fff; font: inherit; }
+.password-gate-card .start-button { margin-top: 20px; }
 .public-approximation-answers .public-approximation-answer:last-child { border-bottom: 1px solid color-mix(in srgb, var(--team-color) 28%, rgba(21,29,102,0.1)); }
 .public-approximation-answer strong { color: var(--ink); font-size: 1.16rem; letter-spacing: -0.015em; }
 .public-approximation-metric {
