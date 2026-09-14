@@ -15,6 +15,7 @@ let syncVersion = 0;
 let stateStream = null;
 let statePublishQueue = Promise.resolve();
 let publicPresentationState = null;
+const roundHeartbeatInterval = 5 * 60 * 1000;
 const questions = () => questionCatalog;
 const isApproximation = (question) => question?.modalidade === "aproximacao";
 const isAuctionQuestion = (question) => question && !isApproximation(question);
@@ -106,6 +107,24 @@ function queueRoundStatePublish(state) {
   return statePublishQueue;
 }
 
+function restoreAuctioneerStateIfNeeded(payload) {
+  if (payload?.state || !document.querySelector("#release-question")) return;
+  queueRoundStatePublish(readRoundState());
+}
+
+function keepRoundConnectionAlive() {
+  if (!document.querySelector("#release-question, .public-shell")) return;
+  setInterval(() => {
+    fetch("/api/state", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : Promise.reject())
+      .then((payload) => {
+        if (payload.state) applySharedRoundState(payload);
+        else restoreAuctioneerStateIfNeeded(payload);
+      })
+      .catch(() => setSyncStatus("reconnecting"));
+  }, roundHeartbeatInterval);
+}
+
 async function initialiseStateSync() {
   setSyncStatus("connecting");
   try {
@@ -119,14 +138,16 @@ async function initialiseStateSync() {
     stateStream = new EventSource("/api/state/events");
     stateStream.addEventListener("state", (event) => {
       try {
-        applySharedRoundState(JSON.parse(event.data));
+        const payload = JSON.parse(event.data);
+        if (payload.state) applySharedRoundState(payload);
+        else restoreAuctioneerStateIfNeeded(payload);
         setSyncStatus("connected");
       } catch {
         setSyncStatus("reconnecting");
       }
     });
     stateStream.onerror = () => setSyncStatus("reconnecting");
-    if (!payload.state && document.querySelector("#release-question")) queueRoundStatePublish(readRoundState());
+    restoreAuctioneerStateIfNeeded(payload);
   } catch {
     setSyncStatus("offline");
   }
@@ -594,6 +615,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!initialiseAuctioneerAccess()) return;
   await loadQuestionCatalog();
   await initialiseStateSync();
+  keepRoundConnectionAlive();
   initialiseSetup();
   const confirmButton = document.querySelector("#confirm-final-bid");
   if (confirmButton) {
