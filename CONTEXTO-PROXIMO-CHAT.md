@@ -32,10 +32,10 @@ Há 24 questões válidas, carregadas pelo servidor:
 | 04, 05, 06 | Aproximação | Não há valor de lote |
 | 07, 08 | Resposta aberta | R$ 400 e R$ 500 |
 | 09, 10 | Verdadeiro/falso | R$ 450 cada |
-| 12, 13, 14, 15 | Múltipla escolha | R$ 350, R$ 400, R$ 450 e R$ 400 |
-| 16, 17, 18, 19 | Resposta aberta | R$ 500, R$ 450, R$ 450 e R$ 600 |
-| 20, 21, 22 | Aproximação | Não há valor de lote |
-| 23, 24, 25 | Verdadeiro/falso | R$ 450, R$ 350 e R$ 400 |
+| 11, 12, 13, 14 | Múltipla escolha | R$ 350, R$ 400, R$ 450 e R$ 400 |
+| 15, 16, 17, 18 | Resposta aberta | R$ 500, R$ 450, R$ 450 e R$ 600 |
+| 19, 20, 21 | Aproximação | Não há valor de lote |
+| 22, 23, 24 | Verdadeiro/falso | R$ 450, R$ 350 e R$ 400 |
 
 Campos aceitos: `id`, `modalidade`, `enunciado`, `alternativas` quando aplicável, `resposta` e `valor_lote` exceto em aproximação. Não usar tópico ou dificuldade.
 
@@ -116,7 +116,7 @@ Isso **não vaza pela interface normal** e não afeta o funcionamento da partida
 
 ## Ampliação do catálogo em 14/09/2026
 
-As 14 questões extraídas de `questoes2.txt` foram normalizadas no formato de front matter e adicionadas com IDs de 12 a 25. O catálogo atual não possui a questão 11; isso não impede o sorteio, que usa IDs existentes em vez de sequência numérica. O catálogo deve ser conferido pelo endpoint real antes de novos commits.
+As 14 questões extraídas de `questoes2.txt` foram normalizadas no formato de front matter e adicionadas com IDs de 11 a 24. O catálogo deve ser conferido pelo endpoint real antes de novos commits.
 
 O arquivo `questoes2.txt` foi preservado como material-fonte local e não é necessário para o jogo carregar as novas perguntas.
 

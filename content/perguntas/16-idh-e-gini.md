@@ -1,5 +1,5 @@
 ---
-id: "17"
+id: "16"
 modalidade: aberta
 valor_lote: 450
 enunciado: "Um país registrou um crescimento econômico contínuo e aumentou sua renda média por habitante nos últimos dez anos. No entanto, no mesmo período, o seu índice de Gini subiu. É correto afirmar que a qualidade de vida da maioria da população melhorou nesse período? Justifique sua resposta relacionando os dois indicadores."

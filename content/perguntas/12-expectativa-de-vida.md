@@ -1,5 +1,5 @@
 ---
-id: "13"
+id: "12"
 modalidade: multipla_escolha
 valor_lote: 400
 enunciado: "A expectativa de vida de uma população aumenta significativamente ao longo de algumas décadas. Entretanto, a taxa de fecundidade permanece abaixo do nível de reposição. Qual transformação demográfica tende a ocorrer?"
