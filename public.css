@@ -15,7 +15,7 @@
   text-align: center;
   transform: none;
 }
-.public-header h1 { margin: 0; padding: 0; font-size: clamp(32px, 3vw, 52px); letter-spacing: -.03em; line-height: 1; }
+.public-header h1 { width: 100%; max-width: none; margin: 0; padding: 0; font-size: clamp(32px, 3vw, 52px); letter-spacing: -.03em; line-height: 1; }
 .public-shell .section-label { color: var(--teal-dark); font-size: 16px; letter-spacing: .08em; }
 .public-shell .money-value { display: inline-flex; width: auto; gap: .24ch; align-items: baseline; white-space: nowrap; }
 .public-shell .team-dot { width: 14px; height: 14px; flex: none; box-shadow: 0 0 0 5px color-mix(in srgb, var(--team-color) 12%, transparent); }
@@ -66,7 +66,8 @@
 .public-start-waiting > p:last-child { font-size: 24px; }
 
 /* Question: broad reading measure, clearly separate bid and timer. */
-.public-round, .public-result { width: min(98%, 1333px); padding: clamp(17px, 2.66vh, 32px); border: 0; border-radius: 20px; background: rgba(255,255,255,.88); box-shadow: 0 22px 60px rgba(21,29,102,.07); }
+/* 98% width, then 95% full-card scale. `zoom` changes layout dimensions too. */
+.public-round, .public-result { width: min(98%, 1333px); zoom: .95; padding: clamp(17px, 2.66vh, 32px); border: 0; border-radius: 20px; background: rgba(255,255,255,.88); box-shadow: 0 22px 60px rgba(21,29,102,.07); }
 .public-round-top { margin-bottom: 18px; gap: 24px; }
 .public-lot-info { display: flex; align-items: center; gap: 28px; }
 .public-lot-info > div { padding-right: 28px; border-right: var(--public-border); }
@@ -127,7 +128,7 @@
 .public-result.is-approximation .public-approximation-answer { min-height: 76px; padding-block: 9px; }
 
 /* Final: first place anchors the full-width, aligned classification. */
-.public-final { width: min(98%, 1372px); max-height: none; padding: 0; border: 0; border-radius: 0; text-align: left; background: none; box-shadow: none; }
+.public-final { width: min(98%, 1372px); zoom: .95; max-height: none; padding: 0; border: 0; border-radius: 0; text-align: left; background: none; box-shadow: none; }
 .public-final-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 34px; }
 .public-final h1 { margin: 0; font-size: clamp(48px, 4.5vw, 80px); letter-spacing: -.03em; line-height: 1; }
 .public-final h1 span { color: var(--teal-dark); }
@@ -146,7 +147,7 @@
 .final-rank-stats > b, .final-rank-stats > small { justify-self: start; font-size: 34px; font-weight: 700; color: var(--ink); }
 .final-rank-stats > small { padding-left: 0; color: var(--teal-dark); }
 .final-rank-item:first-child .final-rank-stats > b, .final-rank-item:first-child .final-rank-stats > small { font-size: 42px; }
-.public-failure { width: min(98%, 1019px); border-radius: 20px; }
+.public-failure { width: min(98%, 1019px); zoom: .95; border-radius: 20px; }
 .public-failure > p:not(.section-label) { max-width: 38ch; font-size: 24px; }
 
 /* Lower useful heights: reduce spacing first and retain readable data. */
