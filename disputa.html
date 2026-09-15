@@ -6,6 +6,7 @@
     <meta name="description" content="Painel público da disputa do Leilão do Censo." />
     <title>Painel da disputa — Leilão do Censo</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="public.css" />
   </head>
   <body>
     <main class="entry-page public-page">
@@ -15,16 +16,18 @@
 
       <section class="public-shell" data-public-state="waiting" aria-labelledby="public-title">
         <header class="public-header">
-          <p class="section-label">Leilão do Censo</p>
-          <h1 id="public-title">Painel da <span>disputa</span></h1>
+          <h1 id="public-title">Leilão do <span>Censo</span></h1>
           <p class="public-sync-status" data-public-sync-status role="status" aria-live="polite">Conectando à partida…</p>
         </header>
 
         <section class="public-waiting" data-public-waiting>
-          <h2>Aguardando a liberação do lote</h2>
-          <div class="public-teaser" data-public-teaser hidden>
-            <p class="section-label">Lote em leilão</p>
-            <strong data-lot-value>R$ ?</strong>
+          <div class="public-waiting-intro">
+            <div class="public-demography" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <h2 data-public-waiting-title>Aguardando o leiloeiro começar a partida</h2>
+            <div class="public-teaser" data-public-teaser hidden>
+              <p class="section-label">Lote em leilão</p>
+              <strong data-lot-value>R$ ?</strong>
+            </div>
           </div>
           <section class="public-ranking" aria-labelledby="public-ranking-title">
             <p class="section-label" id="public-ranking-title">Equipes na disputa</p>
@@ -33,9 +36,9 @@
         </section>
 
         <section class="public-start-waiting" data-public-start-waiting hidden>
-          <p class="section-label">Leilão do Censo</p>
-          <h2>Aguardando início da partida</h2>
-          <p>O leiloeiro está preparando nova disputa.</p>
+          <div class="public-demography" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <h2>Aguardando o leiloeiro começar a partida</h2>
+          <p>Uma nova disputa está sendo preparada.</p>
         </section>
 
         <section class="public-failure" data-public-failure hidden role="alert" aria-labelledby="public-failure-title">
@@ -66,16 +69,21 @@
           <p class="section-label">Resultado da rodada</p>
           <h2 data-public-result-title></h2>
           <p data-public-result-message></p>
+          <div class="public-award" data-public-award hidden></div>
           <div class="public-recipients" data-public-recipients hidden>
             <p>Valor recebido pelas outras equipes:</p>
             <strong data-public-share></strong>
           </div>
           <p class="public-correct-answer" data-public-correct-answer hidden></p>
+          <p class="public-pot" data-public-pot hidden></p>
         </section>
 
         <section class="public-final" data-final-ranking hidden aria-labelledby="final-title">
-          <p class="section-label">Fim da partida</p>
-          <h1 id="final-title">Ranking final</h1>
+          <header class="public-final-heading">
+            <h1 id="final-title">Ranking <span>final</span></h1>
+            <p>Partida encerrada</p>
+          </header>
+          <div class="public-final-columns" aria-hidden="true"><span>Classificação</span><span>Lotes</span><span>Saldo</span></div>
           <ol class="final-list" data-final-list></ol>
         </section>
       </section>

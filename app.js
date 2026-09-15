@@ -319,18 +319,30 @@ function renderAuctioneer() {
 function renderPublicApproximationAnswers(state) {
   const panel = document.querySelector("[data-public-approximation-answers]"); const list = document.querySelector("[data-public-approximation-answer-list]");
   if (!panel || !list) return;
+  const resultVisible = state.result === "approximation";
+  // Keep the same public table after revelation; winner styling is gated by the result.
+  document.querySelector(resultVisible ? "[data-public-result]" : "[data-public-round]").append(panel);
+  const presentationKey = JSON.stringify([state.teams, state.approximationAnswers, state.approximationBets, resultVisible, resultVisible ? state.winningTeams : []]);
+  if (list.dataset.presentationKey === presentationKey) { panel.hidden = false; return; }
+  list.dataset.presentationKey = presentationKey;
   const answers = new Map(state.approximationAnswers.map((answer) => [answer.team, answer.value]));
   const bets = new Map(state.approximationBets.map((bet) => [bet.team, bet.value]));
   list.replaceChildren(...state.teams.map((team) => {
     const item = document.createElement("li"); item.className = "public-approximation-answer"; item.style.setProperty("--team-color", team.color);
     const dot = document.createElement("span"); dot.className = "team-dot"; dot.setAttribute("aria-hidden", "true");
     const name = document.createElement("strong"); name.textContent = team.name;
+    if (resultVisible && state.winningTeams.includes(team.name)) {
+      item.classList.add("is-winner");
+      const winnerLabel = document.createElement("small"); winnerLabel.className = "public-answer-winner"; winnerLabel.textContent = "Mais próxima · +1 lote"; name.append(winnerLabel);
+    }
     const answerMetric = document.createElement("span"); answerMetric.className = "public-approximation-metric";
     const answerValue = document.createElement("b"); answerValue.className = "public-approximation-answer-value"; answerValue.textContent = formatApproximationValue(answers.get(team.name));
-    answerMetric.append(answerValue);
+    const answerLabel = document.createElement("small"); answerLabel.textContent = "Resposta";
+    answerMetric.append(answerLabel, answerValue);
     const betMetric = document.createElement("span"); betMetric.className = "public-approximation-metric public-approximation-metric--bet";
     const betValue = document.createElement("b"); betValue.className = "public-approximation-bet-value"; setMoneyValue(betValue, bets.get(team.name));
-    betMetric.append(betValue);
+    const betLabel = document.createElement("small"); betLabel.textContent = "Aposta";
+    betMetric.append(betLabel, betValue);
     item.append(dot, name, answerMetric, betMetric); return item;
   }));
   panel.hidden = false;
@@ -339,6 +351,23 @@ function renderPublicApproximationAnswers(state) {
 function renderPublicResult(state) {
   const question = getQuestion(state); const title = document.querySelector("[data-public-result-title]"); const message = document.querySelector("[data-public-result-message]"); const recipients = document.querySelector("[data-public-recipients]"); const shareValue = document.querySelector("[data-public-share]"); const correctAnswer = document.querySelector("[data-public-correct-answer]"); const panel = document.querySelector("[data-public-result]");
   const winningTeam = state.result === "approximation" ? state.teams.find((team) => state.winningTeams.includes(team.name)) : state.teams.find((team) => team.name === state.team);
+  const award = document.querySelector("[data-public-award]");
+  const potDisplay = document.querySelector("[data-public-pot]");
+  award.hidden = state.result !== "correct";
+  potDisplay.hidden = state.result !== "approximation";
+  panel.classList.toggle("is-approximation", state.result === "approximation");
+  if (state.result !== "approximation") document.querySelector("[data-public-approximation-answers]").hidden = true;
+  if (state.result === "correct") {
+    const awardKey = JSON.stringify([state.currentQuestionId, state.team, winningTeam]);
+    if (award.dataset.presentationKey !== awardKey) {
+      award.dataset.presentationKey = awardKey;
+      const lot = document.createElement("div"); const lotValue = document.createElement("strong"); lotValue.textContent = "+1 lote";
+      const lotCaption = document.createElement("span"); lotCaption.textContent = `${winningTeam?.lots || 0} ${winningTeam?.lots === 1 ? "lote conquistado" : "lotes conquistados"}`; lot.append(lotValue, lotCaption);
+      const balance = document.createElement("div"); const gain = document.createElement("strong"); setMoneyValue(gain, question.valorLote); gain.prepend("+ ");
+      const balanceCaption = document.createElement("span"); balanceCaption.textContent = `Saldo: ${formatMoney(winningTeam?.balance)}`; balance.append(gain, balanceCaption);
+      award.replaceChildren(lot, balance);
+    }
+  }
   if (panel) {
     panel.classList.toggle("is-celebration", state.result === "correct" || state.result === "approximation");
     panel.classList.toggle("is-setback", state.result === "wrong");
@@ -350,10 +379,12 @@ function renderPublicResult(state) {
     const share = Math.floor(pot / state.winningTeams.length);
     const answers = new Map(state.approximationAnswers.map((answer) => [answer.team, answer.value]));
     const winnerAnswers = state.winningTeams.map((team) => formatApproximationValue(answers.get(team))).join(" e ");
-    title.textContent = `${winners} ${state.winningTeams.length === 1 ? "ficou mais próxima" : "ficaram mais próximas"}`;
+    title.textContent = state.winningTeams.length === 1 ? `${winners} ficou mais próxima` : `${state.winningTeams.length} equipes ficaram mais próximas`;
     message.textContent = `${state.winningTeams.length === 1 ? "Resposta da equipe" : "Respostas das equipes"}: ${winnerAnswers}. ${state.winningTeams.length === 1 ? "Lote adquirido." : "Lotes adquiridos."}`;
     recipients.hidden = false; recipients.querySelector("p").textContent = state.winningTeams.length === 1 ? "Total das apostas recebido:" : "Valor recebido por cada equipe empatada:"; setMoneyValue(shareValue, share);
     correctAnswer.textContent = `Resposta correta: ${question.resposta}`; correctAnswer.hidden = false;
+    potDisplay.textContent = `Total das apostas: ${formatMoney(pot)}`;
+    renderPublicApproximationAnswers(state);
     return;
   }
   if (state.result === "correct") { title.textContent = "Lote adquirido"; message.textContent = `${state.team} acertou a resposta e adquiriu o lote.`; recipients.hidden = true; correctAnswer.hidden = true; return; }
@@ -391,11 +422,15 @@ function renderPublicRoundContext(state, question) {
 function renderFinalRanking(state) {
   const list = document.querySelector("[data-final-list]");
   if (!list) return;
+  const presentationKey = JSON.stringify(state.standings);
+  if (list.dataset.presentationKey === presentationKey) return;
+  list.dataset.presentationKey = presentationKey;
   list.replaceChildren(...state.standings.map((team, index) => {
     const item = document.createElement("li"); item.className = "final-rank-item"; item.style.setProperty("--team-color", team.color);
-    const rank = document.createElement("span"); rank.className = "final-rank-position"; rank.textContent = String(index + 1);
+    const rank = document.createElement("span"); rank.className = "final-rank-position"; rank.textContent = String(index + 1).padStart(2, "0");
     const dot = document.createElement("span"); dot.className = "team-dot"; dot.setAttribute("aria-hidden", "true");
     const name = document.createElement("strong"); name.textContent = team.name;
+    const positionLabel = document.createElement("small"); positionLabel.className = "final-position-label"; positionLabel.textContent = `${index + 1}º lugar`; name.prepend(positionLabel);
     const stats = document.createElement("span"); stats.className = "final-rank-stats";
     const lots = document.createElement("b"); lots.textContent = `${team.lots} ${team.lots === 1 ? "lote" : "lotes"}`;
     const detail = document.createElement("small"); setMoneyValue(detail, team.balance);
@@ -427,9 +462,18 @@ function presentPublicState(shell, nextState) {
   }[nextState];
   const target = targetSelector ? shell.querySelector(targetSelector) : null;
   if (!target || target.hidden) return;
-  target.classList.remove("public-state-enter");
-  void target.offsetWidth;
-  target.classList.add("public-state-enter");
+  // One finite transition per presentation change. Repeated SSE renders never restart it.
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  target.animate([{ transform: "translateY(8px)" }, { transform: "translateY(0)" }], { duration: 300, easing: "cubic-bezier(.23,1,.32,1)" });
+  const sequence = nextState === "final" ? target.querySelectorAll(".final-rank-item")
+    : nextState === "released-answers" ? target.querySelectorAll(".public-approximation-answer")
+    : nextState === "result" ? target.querySelectorAll(".public-award > div, .public-correct-answer, .public-approximation-answer") : [];
+  sequence.forEach((item, index) => item.animate([{ transform: "translateY(6px)" }, { transform: "translateY(0)" }], { duration: 420, delay: index * 65, easing: "cubic-bezier(.23,1,.32,1)" }));
+  const celebration = nextState === "final" ? target.querySelector(".final-rank-item") : target.matches(".is-celebration") ? target : null;
+  if (celebration) {
+    const color = getComputedStyle(celebration).getPropertyValue(nextState === "final" ? "--team-color" : "--result-color").trim();
+    celebration.animate([{ outline: `0px solid ${color}`, outlineOffset: "0px" }, { outline: `3px solid ${color}`, outlineOffset: "4px", offset: 0.3 }, { outline: `0px solid transparent`, outlineOffset: "10px" }], { duration: 850, easing: "ease-out" });
+  }
 }
 
 function renderPublicPanel() {
@@ -455,7 +499,10 @@ function renderPublicPanel() {
   round.classList.toggle("is-answers-only", Boolean(state.approximationCalculated && !state.result));
   if (state.result) { renderPublicResult(state); presentPublicState(shell, "result"); return; }
   if (approximationAnswers) approximationAnswers.hidden = true;
-  if (!state.released) { renderPublicRanking(state); presentPublicState(shell, "waiting"); return; }
+  if (!state.released) {
+    document.querySelector("[data-public-waiting-title]").textContent = question ? "Aguardando a liberação do lote" : "Aguardando o leiloeiro começar a partida";
+    renderPublicRanking(state); presentPublicState(shell, "waiting"); return;
+  }
   renderPublicRoundContext(state, question);
   if (state.approximationCalculated) renderPublicApproximationAnswers(state);
   const timer = document.querySelector("[data-public-timer]"); const note = document.querySelector("[data-public-timer-note]");

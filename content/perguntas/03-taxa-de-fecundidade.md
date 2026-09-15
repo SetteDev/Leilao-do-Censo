@@ -1,7 +1,7 @@
 ---
 id: "03"
 modalidade: multipla_escolha
-valor_lote: 350
+valor_lote: 300
 enunciado: "O que significa dizer que um país possui taxa de fecundidade de 1,57?"
 alternativas:
   - "Que 1,57% das mulheres têm filhos."
