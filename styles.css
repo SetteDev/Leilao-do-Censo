@@ -369,6 +369,7 @@ h1 span { color: var(--teal); }
 .summary-team dl { display: grid; grid-column: 1 / -1; grid-template-columns: 1fr auto; gap: 10px; margin: 12px 0 0; }
 .summary-team dl div:last-child { text-align: right; }
 .summary-team dt { margin-bottom: 2px; color: var(--muted); font-size: 0.72rem; }.summary-team dd { margin: 0; color: var(--ink); font-size: 0.86rem; font-weight: 700; }
+.sacrifice-lot { grid-column: 1 / -1; min-height: 34px; margin-top: 10px; padding: 7px 10px; cursor: pointer; border: 1px solid color-mix(in srgb, var(--coral) 40%, transparent); border-radius: 9px; color: var(--coral-dark); font: inherit; font-size: 0.76rem; font-weight: 800; background: rgba(245,101,84,0.08); }.sacrifice-lot:hover:not(:disabled) { background: rgba(245,101,84,0.16); }.sacrifice-lot:focus-visible { outline: 3px solid rgba(8,127,140,0.35); outline-offset: 2px; }.sacrifice-lot:disabled { cursor: not-allowed; border-color: rgba(21,29,102,0.1); color: var(--muted); background: rgba(21,29,102,0.035); opacity: 0.72; }
 
 @media (max-width: 820px) {
   .match-header { grid-template-columns: 1fr auto; text-align: left; }.match-header > div { grid-column: 1 / -1; grid-row: 1; }.match-header .back-link, .auction-status { z-index: 1; grid-row: 2; margin-top: 18px; }.match-header .back-link { grid-column: 1; }.auction-status { grid-column: 2; }

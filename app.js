@@ -3,9 +3,9 @@ const auctioneerAccessKey = "leilao-do-censo-auctioneer-access";
 const auctioneerPassword = "Demografia";
 const timerSyncGraceMs = 3000;
 const defaultTeamColors = ["#bf4135", "#006e7b", "#687500", "#151d66"];
-const defaultConfig = { ocultarValor: true, capLance: 50, timerSeconds: 45 };
-const normaliseConfig = (config) => ({ ...defaultConfig, ...(config || {}), ocultarValor: Boolean(config?.ocultarValor ?? defaultConfig.ocultarValor), capLance: Math.max(0, Math.trunc(Number(config?.capLance) || 0)), timerSeconds: Math.max(5, Math.trunc(Number(config?.timerSeconds) || defaultConfig.timerSeconds)) });
-const createInitialTeams = () => ["Equipe 1", "Equipe 2", "Equipe 3", "Equipe 4"].map((name, index) => ({ name, color: defaultTeamColors[index], balance: 1000, lots: 0 }));
+const defaultConfig = { ocultarValor: true, capLance: 50, timerSeconds: 45, saldoInicial: 1000 };
+const normaliseConfig = (config) => ({ ...defaultConfig, ...(config || {}), ocultarValor: Boolean(config?.ocultarValor ?? defaultConfig.ocultarValor), capLance: Math.max(0, Math.trunc(Number(config?.capLance) || 0)), timerSeconds: Math.max(5, Math.trunc(Number(config?.timerSeconds) || defaultConfig.timerSeconds)), saldoInicial: Math.max(0, Math.trunc(Number(config?.saldoInicial ?? defaultConfig.saldoInicial) || 0)) });
+const createInitialTeams = () => ["Equipe 1", "Equipe 2", "Equipe 3", "Equipe 4"].map((name, index) => ({ name, color: defaultTeamColors[index], balance: defaultConfig.saldoInicial, lots: 0 }));
 const initialRoundState = { team: "", bid: null, bidDebited: false, confirmed: false, released: false, timerEndsAt: null, timerExpired: false, result: null, winningTeams: [], approximationAnswers: [], approximationBets: [], approximationCalculated: false, valueRevealed: false, gameOver: false, awaitingSetup: false, standings: [], config: normaliseConfig({}), teams: createInitialTeams(), currentQuestionId: null, usedQuestionIds: [], catalogExhausted: false };
 
 let questionCatalog = [];
@@ -165,7 +165,7 @@ function chooseNextQuestion(state, filter = null) {
   return { currentQuestionId: question.id, usedQuestionIds: [...state.usedQuestionIds, question.id], catalogExhausted: false };
 }
 
-function createTeamCard(team) {
+function createTeamCard(team, gameOver) {
   const card = document.createElement("div");
   card.className = "summary-team";
   card.style.setProperty("--team-color", team.color);
@@ -178,13 +178,17 @@ function createTeamCard(team) {
     if (isMoney) setMoneyValue(definition, value); else definition.textContent = value;
     row.append(term, definition); details.append(row);
   });
-  card.append(dot, name, details);
+  const sacrifice = document.createElement("button");
+  sacrifice.type = "button"; sacrifice.className = "sacrifice-lot"; sacrifice.dataset.sacrificeTeam = team.name;
+  sacrifice.textContent = "Sacrificar 1 lote por R$ 500";
+  sacrifice.disabled = gameOver || team.balance !== 0 || team.lots < 1;
+  card.append(dot, name, details, sacrifice);
   return card;
 }
 
 function renderTeamSummary(state) {
   const list = document.querySelector("[data-teams-summary-list]");
-  if (list) list.replaceChildren(...state.teams.map(createTeamCard));
+  if (list) list.replaceChildren(...state.teams.map((team) => createTeamCard(team, state.gameOver)));
 }
 
 function renderTeamSelect(state) {
@@ -309,7 +313,7 @@ function renderAuctioneer() {
   if (catalogLoadError) { status.textContent = "Catálogo indisponível"; message.textContent = "Não foi possível carregar as questões. Inicie pelo servidor local."; return; }
   if (noRound) { status.textContent = "Catálogo esgotado"; message.textContent = "Não há mais perguntas disponíveis. Adicione novas questões ao catálogo para continuar."; displays.forEach((element) => { element.textContent = formatTime(state.config.timerSeconds); }); return; }
   if (state.gameOver) { status.textContent = "Partida encerrada"; message.textContent = "Acompanhe o ranking final no Painel da disputa."; displays.forEach((element) => { element.textContent = formatTime(state.config.timerSeconds); }); return; }
-  if (state.result) { status.textContent = "Rodada encerrada"; message.textContent = approximation ? "Apostas distribuídas entre a(s) equipe(s) mais próxima(s)." : state.result === "correct" ? "Resultado: lote adquirido e saldo atualizado." : "Resultado: lance redistribuído e saldos atualizados."; }
+  if (state.result) { status.textContent = "Rodada encerrada"; message.textContent = approximation ? "Apostas descontadas; equipes mais próximas receberam o dobro da própria aposta." : state.result === "correct" ? "Resultado: lote adquirido e saldo atualizado." : "Resultado: lance redistribuído e saldos atualizados."; }
   else if (state.approximationCalculated) { status.textContent = "Respostas calculadas"; message.textContent = "Respostas foram exibidas. Libere resposta correta e equipe vencedora."; }
   else if (!state.released) { status.textContent = "Privada — pronta para liberação"; message.textContent = approximation ? "Libere a rodada quando todas as equipes estiverem prontas para responder." : "Confirme o lance para publicar a pergunta e iniciar o tempo."; }
   else if (state.timerExpired) { status.textContent = "Exibida no Painel da disputa"; message.textContent = approximation ? "Tempo encerrado. Registre respostas e calcule resultado." : "Tempo encerrado. Marque o resultado da resposta manualmente."; }
@@ -336,7 +340,8 @@ function renderPublicApproximationAnswers(state) {
     const name = document.createElement("strong"); name.textContent = team.name;
     if (resultVisible && state.winningTeams.includes(team.name)) {
       item.classList.add("is-winner");
-      const winnerLabel = document.createElement("small"); winnerLabel.className = "public-answer-winner"; winnerLabel.textContent = "Mais próxima · +1 lote"; name.append(winnerLabel);
+      const reward = (bets.get(team.name) || 0) * 2;
+      const winnerLabel = document.createElement("small"); winnerLabel.className = "public-answer-winner"; winnerLabel.textContent = `Mais próxima · +1 lote · ganhou ${formatMoney(reward)}`; name.append(winnerLabel);
     }
     const answerMetric = document.createElement("span"); answerMetric.className = "public-approximation-metric";
     const answerValue = document.createElement("b"); answerValue.className = "public-approximation-answer-value"; answerValue.textContent = formatApproximationValue(answers.get(team.name));
@@ -357,7 +362,7 @@ function renderPublicResult(state) {
   const award = document.querySelector("[data-public-award]");
   const potDisplay = document.querySelector("[data-public-pot]");
   award.hidden = state.result !== "correct";
-  potDisplay.hidden = state.result !== "approximation";
+  potDisplay.hidden = true;
   panel.classList.toggle("is-approximation", state.result === "approximation");
   if (state.result !== "approximation") document.querySelector("[data-public-approximation-answers]").hidden = true;
   if (state.result === "correct") {
@@ -378,15 +383,18 @@ function renderPublicResult(state) {
   }
   if (state.result === "approximation") {
     const winners = state.winningTeams.join(" e ");
-    const pot = state.approximationBets.reduce((total, bet) => total + Math.max(0, Math.trunc(Number(bet.value) || 0)), 0);
-    const share = Math.floor(pot / state.winningTeams.length);
+    const bets = new Map(state.approximationBets.map((bet) => [bet.team, Math.max(0, Math.trunc(Number(bet.value) || 0))]));
     const answers = new Map(state.approximationAnswers.map((answer) => [answer.team, answer.value]));
     const winnerAnswers = state.winningTeams.map((team) => formatApproximationValue(answers.get(team))).join(" e ");
     title.textContent = state.winningTeams.length === 1 ? `${winners} ficou mais próxima` : `${state.winningTeams.length} equipes ficaram mais próximas`;
     message.textContent = `${state.winningTeams.length === 1 ? "Resposta da equipe" : "Respostas das equipes"}: ${winnerAnswers}. ${state.winningTeams.length === 1 ? "Lote adquirido." : "Lotes adquiridos."}`;
-    recipients.hidden = false; recipients.querySelector("p").textContent = state.winningTeams.length === 1 ? "Total das apostas recebido:" : "Valor recebido por cada equipe empatada:"; setMoneyValue(shareValue, share);
+    if (state.winningTeams.length === 1) {
+      const reward = (bets.get(state.winningTeams[0]) || 0) * 2;
+      recipients.hidden = false; recipients.querySelector("p").textContent = "Valor ganho pela equipe:"; setMoneyValue(shareValue, reward);
+    } else {
+      recipients.hidden = true;
+    }
     correctAnswer.textContent = `Resposta correta: ${question.resposta}`; correctAnswer.hidden = false;
-    potDisplay.textContent = `Total das apostas: ${formatMoney(pot)}`;
     renderPublicApproximationAnswers(state);
     return;
   }
@@ -414,7 +422,7 @@ function renderPublicRoundContext(state, question) {
   context.replaceChildren();
   if (isApproximation(question)) {
     const message = document.createElement("strong"); message.textContent = "Todas as equipes respondem";
-    const detail = document.createElement("span"); detail.textContent = "Vence quem chegar mais perto e leva o total das apostas.";
+    const detail = document.createElement("span"); detail.textContent = "Quem chegar mais perto recebe o dobro da própria aposta.";
     context.append(message, detail); return;
   }
   const winner = state.teams.find((team) => team.name === state.team);
@@ -574,9 +582,11 @@ function applyApproximationResult() {
   const state = readRoundState(); const question = getQuestion(state); const selected = state.winningTeams;
   if (!isApproximation(question) || state.result || !state.approximationCalculated || !selected.length) return;
   const bets = new Map(state.approximationBets.map((bet) => [bet.team, Math.max(0, Math.trunc(Number(bet.value) || 0))]));
-  const pot = [...bets.values()].reduce((total, bet) => total + bet, 0);
-  const share = Math.floor(pot / selected.length);
-  const teams = state.teams.map((team) => ({ ...team, balance: team.balance - (bets.get(team.name) || 0) + (selected.includes(team.name) ? share : 0), lots: team.lots + (selected.includes(team.name) ? 1 : 0) }));
+  const teams = state.teams.map((team) => {
+    const bet = bets.get(team.name) || 0;
+    const reward = selected.includes(team.name) ? bet * 2 : 0;
+    return { ...team, balance: team.balance - bet + reward, lots: team.lots + (selected.includes(team.name) ? 1 : 0) };
+  });
   saveRoundState({ teams, result: "approximation", timerEndsAt: null, timerExpired: true });
 }
 
@@ -624,16 +634,20 @@ function initialiseSetup() {
   if (activeChoice) activeChoice.hidden = !(activeGame && fromMatch);
   if (startLabel) startLabel.textContent = activeGame ? "Iniciar nova partida" : "Iniciar partida";
   state.teams.forEach((team, index) => { const name = document.querySelector(`#team-${index + 1}`); const color = document.querySelector(`#color-${index + 1}`); name.value = team.name; color.value = team.color; name.closest(".team-field").style.setProperty("--team-color", team.color); });
-  const ocultarValor = document.querySelector("#config-ocultar-valor"); const capLance = document.querySelector("#config-cap-lance"); const timerSeconds = document.querySelector("#config-timer-seconds");
+  const ocultarValor = document.querySelector("#config-ocultar-valor"); const capLance = document.querySelector("#config-cap-lance"); const timerSeconds = document.querySelector("#config-timer-seconds"); const saldoInicial = document.querySelector("#config-saldo-inicial"); const initialBalancePreview = document.querySelector("[data-initial-balance-preview]");
   if (ocultarValor) ocultarValor.checked = state.config.ocultarValor;
   if (capLance) capLance.value = state.config.capLance;
   if (timerSeconds) timerSeconds.value = state.config.timerSeconds;
+  if (saldoInicial) saldoInicial.value = state.config.saldoInicial;
+  const updateInitialBalancePreview = () => { if (initialBalancePreview) initialBalancePreview.textContent = formatMoney(Math.max(0, Math.trunc(Number(saldoInicial?.value) || 0))); };
+  updateInitialBalancePreview();
+  if (saldoInicial) saldoInicial.addEventListener("input", updateInitialBalancePreview);
   startButton.addEventListener("click", () => {
-    const teams = [0, 1, 2, 3].map((index) => ({ name: document.querySelector(`#team-${index + 1}`).value.trim(), color: document.querySelector(`#color-${index + 1}`).value, balance: 1000, lots: 0 }));
-    const names = teams.map((team) => team.name.toLocaleLowerCase("pt-BR")); const message = document.querySelector("#setup-message");
+    const names = [0, 1, 2, 3].map((index) => document.querySelector(`#team-${index + 1}`).value.trim().toLocaleLowerCase("pt-BR")); const message = document.querySelector("#setup-message");
     if (catalogLoadError || !questions().length) { message.textContent = "Não foi possível carregar o catálogo de questões. Inicie o servidor local e tente novamente."; return; }
-    if (teams.some((team) => !team.name) || new Set(names).size !== teams.length) { message.textContent = "Informe quatro nomes diferentes para iniciar a partida."; return; }
-    const config = { ocultarValor: ocultarValor ? ocultarValor.checked : true, capLance: capLance ? capLance.value : 50, timerSeconds: timerSeconds ? timerSeconds.value : 45 };
+    if (names.some((name) => !name) || new Set(names).size !== names.length) { message.textContent = "Informe quatro nomes diferentes para iniciar a partida."; return; }
+    const config = normaliseConfig({ ocultarValor: ocultarValor ? ocultarValor.checked : true, capLance: capLance ? capLance.value : 50, timerSeconds: timerSeconds ? timerSeconds.value : 45, saldoInicial: saldoInicial ? saldoInicial.value : defaultConfig.saldoInicial });
+    const teams = [0, 1, 2, 3].map((index) => ({ name: document.querySelector(`#team-${index + 1}`).value.trim(), color: document.querySelector(`#color-${index + 1}`).value, balance: config.saldoInicial, lots: 0 }));
     startNewGame(teams, config); window.location.href = "partida.html";
   });
 }
@@ -664,7 +678,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initialiseSetup();
   const confirmButton = document.querySelector("#confirm-final-bid");
   if (confirmButton) {
-    confirmButton.addEventListener("click", () => { const state = readRoundState(); if (state.confirmed) return; const team = document.querySelector("#final-team").value; const bidInput = document.querySelector("#final-bid"); const bid = Number(bidInput.value); if (!team || !Number.isInteger(bid) || bid < 0) { bidInput.setCustomValidity("Informe um lance inteiro em reais."); bidInput.reportValidity(); return; } const biddingTeam = state.teams.find((entry) => entry.name === team); const balance = Math.floor(Number(biddingTeam?.balance) || 0); const cap = state.config.capLance; const maxBid = cap > 0 ? Math.floor(balance * cap / 100) : balance; if (bid > maxBid) { const limitText = cap > 0 ? `Teto de lance: ${cap}% do saldo (máximo ${formatMoney(maxBid)}).` : `Saldo disponível: ${formatMoney(maxBid)}.`; bidInput.setCustomValidity(limitText); bidInput.reportValidity(); return; } bidInput.setCustomValidity(""); const teams = state.teams.map((entry) => entry.name === team ? { ...entry, balance: entry.balance - bid } : entry); saveRoundState({ teams, team, bid, bidDebited: true, confirmed: true, released: true, timerEndsAt: null, timerExpired: false, result: null, winningTeams: [], approximationAnswers: [], approximationBets: [], approximationCalculated: false, valueRevealed: false }); renderAuctioneer(); });
+    confirmButton.addEventListener("click", () => { const state = readRoundState(); if (state.confirmed) return; const team = document.querySelector("#final-team").value; const bidInput = document.querySelector("#final-bid"); const bid = Number(bidInput.value); if (!team || !Number.isInteger(bid) || bid < 0) { bidInput.setCustomValidity("Informe um lance inteiro em reais."); bidInput.reportValidity(); return; } const biddingTeam = state.teams.find((entry) => entry.name === team); const balance = Math.floor(Number(biddingTeam?.balance) || 0); const cap = state.config.capLance; const maxBid = cap > 0 ? Math.floor(balance * cap / 100) : balance; if (bid > maxBid) { const limitText = cap > 0 ? `Teto de lance: ${cap}% do saldo (máximo ${formatMoney(maxBid)}).` : `Saldo disponível: ${formatMoney(maxBid)}.`; bidInput.setCustomValidity(limitText); bidInput.reportValidity(); return; } bidInput.setCustomValidity(""); const teams = state.teams.map((entry) => entry.name === team ? { ...entry, balance: entry.balance - bid } : entry); saveRoundState({ teams, team, bid, bidDebited: true, confirmed: true, released: true, timerEndsAt: null, timerExpired: false, result: null, winningTeams: [], approximationAnswers: [], approximationBets: [], approximationCalculated: false, valueRevealed: state.valueRevealed }); renderAuctioneer(); });
     document.querySelector("#release-question").addEventListener("click", () => { saveRoundState({ released: true }); renderAuctioneer(); });
     document.querySelector("#start-timer").addEventListener("click", () => { const state = readRoundState(); saveRoundState({ timerEndsAt: Date.now() + (state.config.timerSeconds * 1000) + timerSyncGraceMs, timerExpired: false }); renderAuctioneer(); });
     document.querySelectorAll("[data-result]").forEach((button) => button.addEventListener("click", () => { applyResult(button.dataset.result); renderAuctioneer(); }));
@@ -687,6 +701,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (cancelChooser) cancelChooser.addEventListener("click", () => { const chooser = document.querySelector("[data-next-lot-chooser]"); if (chooser) chooser.hidden = true; });
     const endGameButton = document.querySelector("#end-game");
     if (endGameButton) endGameButton.addEventListener("click", () => endGame());
+    const teamSummary = document.querySelector("[data-teams-summary-list]");
+    if (teamSummary) teamSummary.addEventListener("click", (event) => {
+      const sacrificeButton = event.target.closest("[data-sacrifice-team]");
+      if (!sacrificeButton) return;
+      const state = readRoundState(); const teamName = sacrificeButton.dataset.sacrificeTeam;
+      const team = state.teams.find((entry) => entry.name === teamName);
+      if (!team || state.gameOver || team.balance !== 0 || team.lots < 1) return;
+      const teams = state.teams.map((entry) => entry.name === teamName ? { ...entry, balance: 500, lots: entry.lots - 1 } : entry);
+      saveRoundState({ teams }); renderAuctioneer();
+    });
   }
   const retryPublicConnection = document.querySelector("#retry-public-connection");
   if (retryPublicConnection) retryPublicConnection.addEventListener("click", () => initialiseStateSync());
