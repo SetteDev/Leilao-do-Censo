@@ -1,6 +1,7 @@
 const roundStorageKey = "leilao-do-censo-round";
 const auctioneerAccessKey = "leilao-do-censo-auctioneer-access";
 const auctioneerPassword = "Demografia";
+const timerSyncGraceMs = 3000;
 const defaultTeamColors = ["#bf4135", "#006e7b", "#687500", "#151d66"];
 const defaultConfig = { ocultarValor: true, capLance: 50, timerSeconds: 45 };
 const normaliseConfig = (config) => ({ ...defaultConfig, ...(config || {}), ocultarValor: Boolean(config?.ocultarValor ?? defaultConfig.ocultarValor), capLance: Math.max(0, Math.trunc(Number(config?.capLance) || 0)), timerSeconds: Math.max(5, Math.trunc(Number(config?.timerSeconds) || defaultConfig.timerSeconds)) });
@@ -36,6 +37,7 @@ function setMoneyValue(element, value) {
 }
 const formatApproximationValue = (value) => Number.isFinite(Number(value)) ? Number(value).toLocaleString("pt-BR", { maximumFractionDigits: 2 }) : "—";
 const remainingSeconds = (state) => Math.max(0, Math.ceil((state.timerEndsAt - Date.now()) / 1000));
+const displayRemainingSeconds = (state) => Math.min(state.config.timerSeconds, remainingSeconds(state));
 const formatTime = (seconds) => `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds).padStart(2, "0").slice(-2)}`;
 const getQuestion = (state) => questions().find((question) => question.id === state.currentQuestionId) || null;
 
@@ -412,7 +414,7 @@ function presentPublicState(shell, nextState) {
   const previousState = publicPresentationState;
   publicPresentationState = nextState;
   shell.dataset.publicState = nextState;
-  if (!previousState || previousState === nextState || typeof Element.prototype.animate !== "function") return;
+  if (previousState === nextState) return;
 
   const targetSelector = {
     waiting: "[data-public-waiting]",
@@ -425,17 +427,9 @@ function presentPublicState(shell, nextState) {
   }[nextState];
   const target = targetSelector ? shell.querySelector(targetSelector) : null;
   if (!target || target.hidden) return;
-
-  const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-  const styles = getComputedStyle(document.documentElement);
-  const duration = Number.parseFloat(styles.getPropertyValue(reducedMotion ? "--motion-reduced" : "--motion-state")) || (reducedMotion ? 160 : 260);
-  const easing = styles.getPropertyValue("--ease-out").trim() || "cubic-bezier(0.23, 1, 0.32, 1)";
-  target.animate(
-    reducedMotion
-      ? [{ opacity: 0.78 }, { opacity: 1 }]
-      : [{ opacity: 0, transform: "translateY(2%) scale(0.985)" }, { opacity: 1, transform: "translateY(0) scale(1)" }],
-    { duration, easing }
-  );
+  target.classList.remove("public-state-enter");
+  void target.offsetWidth;
+  target.classList.add("public-state-enter");
 }
 
 function renderPublicPanel() {
@@ -466,7 +460,7 @@ function renderPublicPanel() {
   if (state.approximationCalculated) renderPublicApproximationAnswers(state);
   const timer = document.querySelector("[data-public-timer]"); const note = document.querySelector("[data-public-timer-note]");
   if (state.timerExpired) { timer.textContent = "Tempo encerrado"; timer.classList.add("is-ended"); note.textContent = "Aguardando a decisão do leiloeiro."; }
-  else if (state.timerEndsAt) { timer.textContent = formatTime(remainingSeconds(state)); timer.classList.remove("is-ended"); note.textContent = "Tempo de resposta em andamento."; }
+  else if (state.timerEndsAt) { timer.textContent = formatTime(displayRemainingSeconds(state)); timer.classList.remove("is-ended"); note.textContent = "Tempo de resposta em andamento."; }
   else { timer.textContent = formatTime(state.config.timerSeconds); timer.classList.remove("is-ended"); note.textContent = "Aguardando o início do tempo."; }
   presentPublicState(shell, state.approximationCalculated ? "released-answers" : "released");
 }
@@ -487,7 +481,7 @@ function refreshActiveTimer() {
 
   const state = readRoundState();
   if (!state.timerEndsAt || state.timerExpired || state.result || state.gameOver) return;
-  const timerValue = formatTime(remainingSeconds(state));
+  const timerValue = formatTime(displayRemainingSeconds(state));
   document.querySelectorAll("[data-timer-display]").forEach((display) => {
     if (display.textContent !== timerValue) display.textContent = timerValue;
   });
@@ -622,7 +616,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (confirmButton) {
     confirmButton.addEventListener("click", () => { const state = readRoundState(); if (state.confirmed) return; const team = document.querySelector("#final-team").value; const bidInput = document.querySelector("#final-bid"); const bid = Number(bidInput.value); if (!team || !Number.isInteger(bid) || bid < 0) { bidInput.setCustomValidity("Informe um lance inteiro em reais."); bidInput.reportValidity(); return; } const biddingTeam = state.teams.find((entry) => entry.name === team); const balance = Math.floor(Number(biddingTeam?.balance) || 0); const cap = state.config.capLance; const maxBid = cap > 0 ? Math.floor(balance * cap / 100) : balance; if (bid > maxBid) { const limitText = cap > 0 ? `Teto de lance: ${cap}% do saldo (máximo ${formatMoney(maxBid)}).` : `Saldo disponível: ${formatMoney(maxBid)}.`; bidInput.setCustomValidity(limitText); bidInput.reportValidity(); return; } bidInput.setCustomValidity(""); const teams = state.teams.map((entry) => entry.name === team ? { ...entry, balance: entry.balance - bid } : entry); saveRoundState({ teams, team, bid, bidDebited: true, confirmed: true, released: true, timerEndsAt: null, timerExpired: false, result: null, winningTeams: [], approximationAnswers: [], approximationBets: [], approximationCalculated: false, valueRevealed: false }); renderAuctioneer(); });
     document.querySelector("#release-question").addEventListener("click", () => { saveRoundState({ released: true }); renderAuctioneer(); });
-    document.querySelector("#start-timer").addEventListener("click", () => { const state = readRoundState(); saveRoundState({ timerEndsAt: Date.now() + (state.config.timerSeconds * 1000), timerExpired: false }); renderAuctioneer(); });
+    document.querySelector("#start-timer").addEventListener("click", () => { const state = readRoundState(); saveRoundState({ timerEndsAt: Date.now() + (state.config.timerSeconds * 1000) + timerSyncGraceMs, timerExpired: false }); renderAuctioneer(); });
     document.querySelectorAll("[data-result]").forEach((button) => button.addEventListener("click", () => { applyResult(button.dataset.result); renderAuctioneer(); }));
     document.querySelector("#confirm-approximation").addEventListener("click", () => { const state = readRoundState(); const answers = [...document.querySelectorAll("[data-approximation-team]")]; const bets = [...document.querySelectorAll("[data-approximation-bet]")]; const invalidAnswer = answers.find((input) => input.value.trim() === "" || !Number.isFinite(Number(input.value))); if (invalidAnswer) { invalidAnswer.setCustomValidity("Registre a resposta desta equipe."); invalidAnswer.reportValidity(); return; } const invalidBet = bets.find((input) => { const balance = Math.floor(state.teams.find((team) => team.name === input.dataset.approximationBet)?.balance || 0); return input.value.trim() === "" || !Number.isInteger(Number(input.value)) || Number(input.value) < 0 || Number(input.value) > balance; }); if (invalidBet) { invalidBet.setCustomValidity("Informe uma aposta inteira entre R$ 0 e o saldo da equipe."); invalidBet.reportValidity(); return; } [...answers, ...bets].forEach((input) => input.setCustomValidity("")); calculateApproximation(); renderAuctioneer(); });
     const revealButton = document.querySelector("#reveal-value");
