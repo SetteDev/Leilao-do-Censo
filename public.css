@@ -8,19 +8,14 @@
   overflow: visible;
 }
 .public-header {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
   width: 100%;
   margin: 0 0 var(--public-space);
   padding: 0 0 22px;
   border-bottom: var(--public-border);
-  text-align: left;
+  text-align: center;
   transform: none;
 }
 .public-header h1 { margin: 0; padding: 0; font-size: clamp(32px, 3vw, 52px); letter-spacing: -.03em; line-height: 1; }
-.public-sync-status { margin: 0; font-size: 15px; letter-spacing: 0; }
-.public-sync-status::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 9px; border-radius: 50%; background: currentColor; }
 .public-shell .section-label { color: var(--teal-dark); font-size: 16px; letter-spacing: .08em; }
 .public-shell .money-value { display: inline-flex; width: auto; gap: .24ch; align-items: baseline; white-space: nowrap; }
 .public-shell .team-dot { width: 14px; height: 14px; flex: none; box-shadow: 0 0 0 5px color-mix(in srgb, var(--team-color) 12%, transparent); }
@@ -29,9 +24,10 @@
 /* Waiting: the message and the four teams share one balanced composition. */
 .public-waiting {
   display: grid;
-  grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
-  gap: clamp(32px, 4vw, 72px);
-  width: 100%;
+  grid-template-columns: minmax(360px, 480px) minmax(560px, 660px);
+  justify-content: center;
+  gap: clamp(24px, 2.5vw, 48px);
+  width: min(100%, 1188px);
   padding: 0;
   border: 0;
   border-radius: 0;
@@ -40,7 +36,7 @@
   box-shadow: none;
   transform: none;
 }
-.public-waiting-intro { width: 100%; }
+.public-waiting-intro { display: grid; justify-items: center; width: 100%; text-align: center; }
 .public-waiting h2, .public-start-waiting h2 { max-width: 18ch; margin: 26px 0 0; font-size: clamp(34px, 3.25vw, 58px); line-height: 1.12; letter-spacing: -.025em; text-wrap: balance; }
 .public-demography { display: grid; justify-items: center; gap: 6px; width: 190px; }
 .public-demography i { display: block; width: 100%; height: 9px; border-radius: 2px; background: linear-gradient(to right, var(--teal) 0 48%, transparent 48% 52%, var(--coral) 52%); opacity: .55; }
@@ -51,7 +47,7 @@
 .public-demography i:nth-child(5) { width: 76%; }
 .public-demography i:nth-child(6) { width: 88%; }
 .public-demography i:last-child { background: var(--lime); opacity: .8; }
-.public-teaser { justify-items: start; gap: 12px; width: fit-content; margin: 28px 0 0; padding: 18px 26px; border: var(--public-border); border-radius: 14px; background: rgba(255,255,255,.7); }
+.public-teaser { justify-items: center; gap: 12px; width: fit-content; margin: 28px 0 0; padding: 18px 26px; border: var(--public-border); border-radius: 14px; background: rgba(255,255,255,.7); }
 .public-teaser strong { font-size: 44px; color: var(--coral-dark); }
 .public-ranking { width: 100%; min-height: 0; margin: 0; padding: 24px; border: var(--public-border); border-radius: 20px; background: rgba(255,255,255,.65); transform: none; }
 .public-ranking .section-label { margin: 0 0 18px; }
@@ -70,7 +66,7 @@
 .public-start-waiting > p:last-child { font-size: 24px; }
 
 /* Question: broad reading measure, clearly separate bid and timer. */
-.public-round, .public-result { width: min(100%, 1360px); padding: var(--public-space); border: 0; border-radius: 20px; background: rgba(255,255,255,.88); box-shadow: 0 22px 60px rgba(21,29,102,.07); }
+.public-round, .public-result { width: min(98%, 1333px); padding: clamp(17px, 2.66vh, 32px); border: 0; border-radius: 20px; background: rgba(255,255,255,.88); box-shadow: 0 22px 60px rgba(21,29,102,.07); }
 .public-round-top { margin-bottom: 18px; gap: 24px; }
 .public-lot-info { display: flex; align-items: center; gap: 28px; }
 .public-lot-info > div { padding-right: 28px; border-right: var(--public-border); }
@@ -79,16 +75,16 @@
 .public-timer { min-width: 172px; padding: 13px 20px; border-radius: 12px; font-size: 44px; }
 .public-timer.is-ended { max-width: 240px; font-size: 25px; }
 .public-winner { margin: 0 0 20px; padding: 14px 18px; gap: 14px; border-radius: 10px; font-size: 24px; }
-.public-question { padding: 28px 32px; border: var(--public-border); border-radius: 14px; background: var(--paper); }
+.public-question { padding: 27px 30px; border: var(--public-border); border-radius: 14px; background: var(--paper); }
 .public-question::before { display: none; }
-.public-question h2 { max-width: 54ch; margin-bottom: 24px; font-size: clamp(28px, 2.1vw, 38px); line-height: 1.22; text-wrap: pretty; }
-.public-options { gap: 12px 20px; font-size: clamp(21px, 1.45vw, 28px); line-height: 1.25; }
-.public-options li { min-height: 60px; padding: 12px 16px; border-radius: 10px; background: rgba(255,255,255,.7); }
+.public-question h2 { max-width: none; margin-bottom: 23px; font-size: clamp(27px, 2vw, 36px); line-height: 1.22; text-wrap: pretty; }
+.public-options { gap: 11px 19px; font-size: clamp(20px, 1.38vw, 27px); line-height: 1.25; }
+.public-options li { min-height: 57px; padding: 11px 15px; border-radius: 10px; background: rgba(255,255,255,.7); }
 .public-options.is-boolean li::before { content: none; }
 .public-timer-note { margin-top: 18px; font-size: 20px; }
 
 /* Results retain readable content throughout their finite transition. */
-.public-result { position: relative; padding: 48px 56px; text-align: center; }
+.public-result { position: relative; padding: 46px 53px; text-align: center; }
 .public-result > .section-label { margin: 0 0 20px; }
 .public-result h2 { margin-bottom: 20px; color: var(--ink); font-size: clamp(44px, 3.6vw, 68px); line-height: 1.08; letter-spacing: -.025em; text-wrap: balance; overflow-wrap: anywhere; }
 .public-result > p:not(.section-label) { color: var(--muted); font-size: 27px; line-height: 1.3; }
@@ -107,7 +103,7 @@
 .public-correct-answer { padding: 22px 0 0; margin-top: 26px !important; border-top: var(--public-border); }
 
 /* Approximation: stable response / bet columns before and after revelation. */
-.public-round.is-answers-only { width: min(100%, 1240px); padding: var(--public-space); transform: none; }
+.public-round.is-answers-only { width: min(98%, 1215px); padding: clamp(17px, 2.66vh, 32px); transform: none; }
 .public-round.is-answers-only .public-approximation-answers, .public-approximation-answers { width: 100%; min-height: 0; margin: 0; padding: 0; border-radius: 0; background: none; }
 .public-approximation-answers .section-label { margin: 0 0 20px; }
 .public-approximation-answers ul { gap: 10px; }
@@ -131,7 +127,7 @@
 .public-result.is-approximation .public-approximation-answer { min-height: 76px; padding-block: 9px; }
 
 /* Final: first place anchors the full-width, aligned classification. */
-.public-final { width: min(100%, 1400px); max-height: none; padding: 0; border: 0; border-radius: 0; text-align: left; background: none; box-shadow: none; }
+.public-final { width: min(98%, 1372px); max-height: none; padding: 0; border: 0; border-radius: 0; text-align: left; background: none; box-shadow: none; }
 .public-final-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 34px; }
 .public-final h1 { margin: 0; font-size: clamp(48px, 4.5vw, 80px); letter-spacing: -.03em; line-height: 1; }
 .public-final h1 span { color: var(--teal-dark); }
@@ -150,7 +146,7 @@
 .final-rank-stats > b, .final-rank-stats > small { justify-self: start; font-size: 34px; font-weight: 700; color: var(--ink); }
 .final-rank-stats > small { padding-left: 0; color: var(--teal-dark); }
 .final-rank-item:first-child .final-rank-stats > b, .final-rank-item:first-child .final-rank-stats > small { font-size: 42px; }
-.public-failure { width: min(100%, 1040px); border-radius: 20px; }
+.public-failure { width: min(98%, 1019px); border-radius: 20px; }
 .public-failure > p:not(.section-label) { max-width: 38ch; font-size: 24px; }
 
 /* Lower useful heights: reduce spacing first and retain readable data. */
@@ -173,7 +169,7 @@
 }
 @media (max-width: 1400px) {
   .public-shell { width: calc(100% - 64px); }
-  .public-waiting { gap: 32px; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); }
+  .public-waiting { grid-template-columns: minmax(320px, 420px) minmax(500px, 600px); gap: 24px; }
   .public-ranking { padding: 18px; }
   .public-ranking-team { padding: 12px; gap: 12px; }
   .public-team-stats { grid-template-columns: 44px 124px; gap: 8px; }
@@ -191,7 +187,6 @@
 @media (max-width: 900px) {
   .public-shell { width: calc(100% - 32px); }
   .public-header h1 { font-size: 28px; }
-  .public-sync-status { font-size: 12px; }
   .public-waiting { grid-template-columns: 1fr; gap: 22px; }
   .public-waiting-intro { display: flex; align-items: center; gap: 24px; }
   .public-waiting h2 { margin: 0; font-size: 30px; }

@@ -35,7 +35,10 @@ function setMoneyValue(element, value) {
   const amount = document.createElement("span"); amount.className = "money-amount"; amount.textContent = formatMoneyAmount(value); amount.setAttribute("aria-hidden", "true");
   money.append(currency, amount); element.replaceChildren(money);
 }
-const formatApproximationValue = (value) => Number.isFinite(Number(value)) ? Number(value).toLocaleString("pt-BR", { maximumFractionDigits: 2 }) : "—";
+const formatApproximationValue = (value) => {
+  const raw = String(value ?? "").trim();
+  return raw && Number.isFinite(Number(raw.replace(",", "."))) ? raw.replace(".", ",") : "—";
+};
 const remainingSeconds = (state) => Math.max(0, Math.ceil((state.timerEndsAt - Date.now()) / 1000));
 const displayRemainingSeconds = (state) => Math.min(state.config.timerSeconds, remainingSeconds(state));
 const formatTime = (seconds) => `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds).padStart(2, "0").slice(-2)}`;
