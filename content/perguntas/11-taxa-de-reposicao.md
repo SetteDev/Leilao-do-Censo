@@ -1,12 +1,12 @@
 ---
 id: "11"
 modalidade: multipla_escolha
-valor_lote: 350
-enunciado: "Uma determinada sociedade apresenta taxa de fecundidade de 1,5 filho por mulher, mortalidade relativamente baixa e pouca imigração. Qual tendência demográfica é mais provável no longo prazo?"
+valor_lote: 500
+enunciado: "Uma sociedade mantém a sua Taxa de Fecundidade Total estabilizada em 1,5 filho por mulher ao longo de várias décadas, apresentando elevada expectativa de vida ao nascer e saldo migratório nulo. Supondo que o padrão demográfico se mantenha, qual desdobramento populacional de longo prazo é o mais provável?"
 alternativas:
-  - "Estabilização imediata da quantidade total de habitantes devido ao baixo índice de óbitos."
-  - "Aumento acelerado do ritmo de crescimento vegetativo impulsionado pelo saldo de nascimentos."
+  - "Estabilização do contingente populacional total impulsionada pela desaceleração da taxa bruta de mortalidade."
+  - "Manutenção do crescimento vegetativo acelerado em virtude da inércia demográfica e da ampliação da base jovem."
   - "Envelhecimento populacional e possibilidade de redução da população."
-  - "Elevação automática e imediata da fecundidade para o nível de reposição por inércia demográfica."
+  - "Recuperação endógena da taxa de reposição populacional decorrente do aumento da proporção de idosos na estrutura etária."
 resposta: "C) Envelhecimento populacional e possibilidade de redução da população."
 ---

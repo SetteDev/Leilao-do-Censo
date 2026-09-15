@@ -1,7 +1,7 @@
 ---
 id: "02"
 modalidade: multipla_escolha
-valor_lote: 400
+valor_lote: 350
 enunciado: "Qual cenário é mais característico de uma população em estágio avançado da transição demográfica?"
 alternativas:
   - "Alta natalidade, alta mortalidade e baixa expectativa de vida."
