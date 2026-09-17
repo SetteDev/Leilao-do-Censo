@@ -1,9 +1,10 @@
 const roundStorageKey = "leilao-do-censo-round";
+const roundUndoStorageKey = "leilao-do-censo-undo";
 const auctioneerAccessKey = "leilao-do-censo-auctioneer-access";
 const auctioneerPassword = "Demografia";
 const timerSyncGraceMs = 3000;
 const defaultTeamColors = ["#bf4135", "#006e7b", "#687500", "#151d66"];
-const defaultConfig = { ocultarValor: true, capLance: 50, timerSeconds: 45, saldoInicial: 1000 };
+const defaultConfig = { ocultarValor: true, capLance: 50, timerSeconds: 45, saldoInicial: 1500 };
 const normaliseConfig = (config) => ({ ...defaultConfig, ...(config || {}), ocultarValor: Boolean(config?.ocultarValor ?? defaultConfig.ocultarValor), capLance: Math.max(0, Math.trunc(Number(config?.capLance) || 0)), timerSeconds: Math.max(5, Math.trunc(Number(config?.timerSeconds) || defaultConfig.timerSeconds)), saldoInicial: Math.max(0, Math.trunc(Number(config?.saldoInicial ?? defaultConfig.saldoInicial) || 0)) });
 const createInitialTeams = () => ["Equipe 1", "Equipe 2", "Equipe 3", "Equipe 4"].map((name, index) => ({ name, color: defaultTeamColors[index], balance: defaultConfig.saldoInicial, lots: 0 }));
 const initialRoundState = { team: "", bid: null, bidDebited: false, confirmed: false, released: false, timerEndsAt: null, timerExpired: false, result: null, winningTeams: [], approximationAnswers: [], approximationBets: [], approximationCalculated: false, valueRevealed: false, gameOver: false, awaitingSetup: false, standings: [], config: normaliseConfig({}), teams: createInitialTeams(), currentQuestionId: null, usedQuestionIds: [], catalogExhausted: false };
@@ -25,7 +26,15 @@ const copyTeams = (teams) => teams.map((team, index) => ({ name: String(team.nam
 const normaliseState = (state) => ({ ...initialRoundState, ...state, config: normaliseConfig(state?.config), teams: Array.isArray(state?.teams) && state.teams.length === 4 ? copyTeams(state.teams) : createInitialTeams(), usedQuestionIds: Array.isArray(state?.usedQuestionIds) ? state.usedQuestionIds : [], winningTeams: Array.isArray(state?.winningTeams) ? state.winningTeams : [], approximationAnswers: Array.isArray(state?.approximationAnswers) ? state.approximationAnswers : [], approximationBets: Array.isArray(state?.approximationBets) ? state.approximationBets : [], standings: Array.isArray(state?.standings) ? state.standings : [] });
 const readRoundState = () => { try { return normaliseState(JSON.parse(localStorage.getItem(roundStorageKey) || "{}")); } catch { return normaliseState({}); } };
 const saveLocalRoundState = (state) => { const next = normaliseState(state); localStorage.setItem(roundStorageKey, JSON.stringify(next)); return next; };
-const saveRoundState = (updates) => { const next = saveLocalRoundState({ ...readRoundState(), ...updates }); queueRoundStatePublish(next); return next; };
+const readUndoEntry = () => { try { const entry = JSON.parse(localStorage.getItem(roundUndoStorageKey) || "null"); return entry?.state ? { label: String(entry.label || "última ação"), state: normaliseState(entry.state) } : null; } catch { return null; } };
+const clearUndoEntry = () => localStorage.removeItem(roundUndoStorageKey);
+const saveRoundState = (updates, undoLabel = "última ação", options = {}) => {
+  const current = readRoundState();
+  if (options.recordUndo !== false) localStorage.setItem(roundUndoStorageKey, JSON.stringify({ label: undoLabel, state: current }));
+  const next = saveLocalRoundState({ ...current, ...updates });
+  queueRoundStatePublish(next);
+  return next;
+};
 const formatMoneyAmount = (value) => Math.trunc(Number(value) || 0).toLocaleString("pt-BR");
 const formatMoney = (value) => `R$ ${formatMoneyAmount(value)}`;
 function setMoneyValue(element, value) {
@@ -171,24 +180,42 @@ function createTeamCard(team, gameOver) {
   card.style.setProperty("--team-color", team.color);
   const dot = document.createElement("span"); dot.className = "team-dot"; dot.setAttribute("aria-hidden", "true");
   const name = document.createElement("strong"); name.textContent = team.name;
-  const details = document.createElement("dl");
-  [["Saldo", team.balance, true], ["Lotes", team.lots, false]].forEach(([label, value, isMoney]) => {
-    const row = document.createElement("div"); const term = document.createElement("dt"); const definition = document.createElement("dd");
-    term.textContent = label;
-    if (isMoney) setMoneyValue(definition, value); else definition.textContent = value;
-    row.append(term, definition); details.append(row);
-  });
+  const editor = document.createElement("div"); editor.className = "team-editor";
+  const balanceLabel = document.createElement("label"); balanceLabel.textContent = "Saldo (R$)";
+  const balanceInput = document.createElement("input"); balanceInput.type = "number"; balanceInput.min = "0"; balanceInput.step = "1"; balanceInput.inputMode = "numeric"; balanceInput.value = team.balance; balanceInput.dataset.teamBalance = team.name; balanceInput.disabled = gameOver;
+  const lotsLabel = document.createElement("label"); lotsLabel.textContent = "Lotes";
+  const lotsInput = document.createElement("input"); lotsInput.type = "number"; lotsInput.min = "0"; lotsInput.step = "1"; lotsInput.inputMode = "numeric"; lotsInput.value = team.lots; lotsInput.dataset.teamLots = team.name; lotsInput.disabled = gameOver;
+  balanceLabel.append(balanceInput); lotsLabel.append(lotsInput); editor.append(balanceLabel, lotsLabel);
+  const actions = document.createElement("div"); actions.className = "team-summary-actions";
+  const apply = document.createElement("button"); apply.type = "button"; apply.className = "apply-team-edit"; apply.dataset.editTeam = team.name; apply.textContent = "Aplicar ajustes"; apply.disabled = true;
   const sacrifice = document.createElement("button");
   sacrifice.type = "button"; sacrifice.className = "sacrifice-lot"; sacrifice.dataset.sacrificeTeam = team.name;
   sacrifice.textContent = "Sacrificar 1 lote por R$ 500";
-  sacrifice.disabled = gameOver || team.balance !== 0 || team.lots < 1;
-  card.append(dot, name, details, sacrifice);
+  sacrifice.disabled = gameOver || team.balance >= 100 || team.lots < 1;
+  actions.append(apply, sacrifice); card.append(dot, name, editor, actions);
   return card;
 }
 
 function renderTeamSummary(state) {
   const list = document.querySelector("[data-teams-summary-list]");
   if (list) list.replaceChildren(...state.teams.map((team) => createTeamCard(team, state.gameOver)));
+}
+
+function renderUndoControl() {
+  const button = document.querySelector("#undo-last-action"); const description = document.querySelector("[data-undo-description]");
+  if (!button || !description) return;
+  const entry = readUndoEntry();
+  button.disabled = !entry;
+  description.textContent = entry ? `Disponível: ${entry.label}.` : "Nenhuma ação disponível para desfazer.";
+}
+
+function undoLastRoundAction() {
+  const entry = readUndoEntry();
+  if (!entry || !window.confirm(`Desfazer: ${entry.label}?`)) return false;
+  clearUndoEntry();
+  const restored = saveLocalRoundState(entry.state);
+  queueRoundStatePublish(restored);
+  return true;
 }
 
 function renderTeamSelect(state) {
@@ -288,7 +315,7 @@ function renderAuctioneer() {
   const state = readRoundState(); const releaseButton = document.querySelector("#release-question");
   if (!releaseButton) return;
   const question = renderQuestion(state); const timerButton = document.querySelector("#start-timer"); const resultButtons = document.querySelectorAll("[data-result]"); const message = document.querySelector("#timer-message"); const displays = document.querySelectorAll("[data-timer-display]"); const status = document.querySelector("#question-status"); const nextLotButton = document.querySelector("#prepare-next-lot"); const startAnotherGameButton = document.querySelector("#start-another-game"); const finalTeam = document.querySelector("#final-team"); const finalBid = document.querySelector("#final-bid"); const confirmButton = document.querySelector("#confirm-final-bid"); const bidForm = document.querySelector("[data-bid-form]"); const approximationPanel = document.querySelector("[data-approximation-result]"); const standardResult = document.querySelector("[data-standard-result]"); const approximationButton = document.querySelector("#confirm-approximation"); const approximationReleaseButton = document.querySelector("#release-approximation-result"); const resultTitle = document.querySelector("#result-title"); const revealButton = document.querySelector("#reveal-value"); const valueVisibility = document.querySelector("[data-value-visibility]"); const endGameButton = document.querySelector("#end-game"); const endPanel = document.querySelector("[data-match-end-panel]");
-  renderTeamSelect(state); renderTeamSummary(state); renderApproximationAnswers(state);
+  renderTeamSelect(state); renderTeamSummary(state); renderApproximationAnswers(state); renderUndoControl();
   const noRound = !question;
   const approximation = isApproximation(question);
   if (bidForm) bidForm.hidden = approximation;
@@ -526,7 +553,7 @@ function renderPublicPanel() {
 function settleExpiredTimer() {
   const state = readRoundState();
   if (!state.timerEndsAt || remainingSeconds(state) !== 0) return false;
-  saveRoundState({ timerEndsAt: null, timerExpired: true });
+  saveRoundState({ timerEndsAt: null, timerExpired: true }, "encerramento automático do cronômetro", { recordUndo: false });
   return true;
 }
 
@@ -559,7 +586,7 @@ function applyResult(result) {
     const debitedBalance = state.bidDebited ? team.balance : team.balance - state.bid;
     return result === "correct" ? { ...team, balance: debitedBalance + question.valorLote, lots: team.lots + 1 } : { ...team, balance: debitedBalance };
   });
-  saveRoundState({ teams, bidDebited: true, result, timerEndsAt: null, timerExpired: true });
+  saveRoundState({ teams, bidDebited: true, result, timerEndsAt: null, timerExpired: true }, result === "correct" ? "marcar resposta como correta" : "marcar resposta como errada");
 }
 
 function getApproximationTarget(answer) {
@@ -575,7 +602,7 @@ function calculateApproximation() {
   const distances = approximationAnswers.map((answer) => ({ team: answer.team, distance: Math.abs(Number(answer.value) - target) }));
   const smallestDistance = Math.min(...distances.map((answer) => answer.distance));
   const selected = distances.filter((answer) => Math.abs(answer.distance - smallestDistance) < 1e-9).map((answer) => answer.team);
-  saveRoundState({ winningTeams: selected, approximationAnswers, approximationBets, approximationCalculated: true, timerEndsAt: null, timerExpired: true });
+  saveRoundState({ winningTeams: selected, approximationAnswers, approximationBets, approximationCalculated: true, timerEndsAt: null, timerExpired: true }, "calcular resultado da aproximação");
 }
 
 function applyApproximationResult() {
@@ -587,7 +614,7 @@ function applyApproximationResult() {
     const reward = selected.includes(team.name) ? bet * 2 : 0;
     return { ...team, balance: team.balance - bet + reward, lots: team.lots + (selected.includes(team.name) ? 1 : 0) };
   });
-  saveRoundState({ teams, result: "approximation", timerEndsAt: null, timerExpired: true });
+  saveRoundState({ teams, result: "approximation", timerEndsAt: null, timerExpired: true }, "liberar resultado da aproximação");
 }
 
 function computeFinalStandings(state) {
@@ -597,7 +624,7 @@ function computeFinalStandings(state) {
 
 function startSelectedLot(filter) {
   const state = readRoundState();
-  saveRoundState({ team: "", bid: null, bidDebited: false, confirmed: false, released: false, timerEndsAt: null, timerExpired: false, result: null, winningTeams: [], approximationAnswers: [], approximationBets: [], approximationCalculated: false, valueRevealed: false, ...chooseNextQuestion(state, filter) });
+  saveRoundState({ team: "", bid: null, bidDebited: false, confirmed: false, released: false, timerEndsAt: null, timerExpired: false, result: null, winningTeams: [], approximationAnswers: [], approximationBets: [], approximationCalculated: false, valueRevealed: false, ...chooseNextQuestion(state, filter) }, "preparar próximo lote");
   const finalTeam = document.querySelector("#final-team"); const finalBid = document.querySelector("#final-bid"); const chooser = document.querySelector("[data-next-lot-chooser]");
   if (finalTeam) finalTeam.value = ""; if (finalBid) finalBid.value = ""; if (chooser) chooser.hidden = true; pendingLotFilter = null;
   renderAuctioneer();
@@ -607,18 +634,20 @@ function endGame() {
   const state = readRoundState();
   if (!state.result && !state.catalogExhausted) return;
   if (!window.confirm("Encerrar a partida e exibir o ranking final?")) return;
-  saveRoundState({ gameOver: true, standings: computeFinalStandings(state) });
+  saveRoundState({ gameOver: true, standings: computeFinalStandings(state) }, "encerrar partida");
   const chooser = document.querySelector("[data-next-lot-chooser]"); if (chooser) chooser.hidden = true;
   renderAuctioneer();
 }
 
 function startNewGame(teams, config) {
+  clearUndoEntry();
   const base = { ...initialRoundState, teams, usedQuestionIds: [], config: normaliseConfig(config) };
   const next = saveLocalRoundState({ ...base, ...chooseNextQuestion(base) });
   queueRoundStatePublish(next);
 }
 
 function prepareAnotherGame() {
+  clearUndoEntry();
   const next = saveLocalRoundState({ ...initialRoundState, awaitingSetup: true });
   queueRoundStatePublish(next);
   window.location.href = "leiloeiro.html";
@@ -678,13 +707,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   initialiseSetup();
   const confirmButton = document.querySelector("#confirm-final-bid");
   if (confirmButton) {
-    confirmButton.addEventListener("click", () => { const state = readRoundState(); if (state.confirmed) return; const team = document.querySelector("#final-team").value; const bidInput = document.querySelector("#final-bid"); const bid = Number(bidInput.value); if (!team || !Number.isInteger(bid) || bid < 0) { bidInput.setCustomValidity("Informe um lance inteiro em reais."); bidInput.reportValidity(); return; } const biddingTeam = state.teams.find((entry) => entry.name === team); const balance = Math.floor(Number(biddingTeam?.balance) || 0); const cap = state.config.capLance; const maxBid = cap > 0 ? Math.floor(balance * cap / 100) : balance; if (bid > maxBid) { const limitText = cap > 0 ? `Teto de lance: ${cap}% do saldo (máximo ${formatMoney(maxBid)}).` : `Saldo disponível: ${formatMoney(maxBid)}.`; bidInput.setCustomValidity(limitText); bidInput.reportValidity(); return; } bidInput.setCustomValidity(""); const teams = state.teams.map((entry) => entry.name === team ? { ...entry, balance: entry.balance - bid } : entry); saveRoundState({ teams, team, bid, bidDebited: true, confirmed: true, released: true, timerEndsAt: null, timerExpired: false, result: null, winningTeams: [], approximationAnswers: [], approximationBets: [], approximationCalculated: false, valueRevealed: state.valueRevealed }); renderAuctioneer(); });
-    document.querySelector("#release-question").addEventListener("click", () => { saveRoundState({ released: true }); renderAuctioneer(); });
-    document.querySelector("#start-timer").addEventListener("click", () => { const state = readRoundState(); saveRoundState({ timerEndsAt: Date.now() + (state.config.timerSeconds * 1000) + timerSyncGraceMs, timerExpired: false }); renderAuctioneer(); });
+    confirmButton.addEventListener("click", () => { const state = readRoundState(); if (state.confirmed) return; const team = document.querySelector("#final-team").value; const bidInput = document.querySelector("#final-bid"); const bid = Number(bidInput.value); if (!team || !Number.isInteger(bid) || bid < 0) { bidInput.setCustomValidity("Informe um lance inteiro em reais."); bidInput.reportValidity(); return; } const biddingTeam = state.teams.find((entry) => entry.name === team); const balance = Math.floor(Number(biddingTeam?.balance) || 0); const cap = state.config.capLance; const maxBid = cap > 0 ? Math.floor(balance * cap / 100) : balance; if (bid > maxBid) { const limitText = cap > 0 ? `Teto de lance: ${cap}% do saldo (máximo ${formatMoney(maxBid)}).` : `Saldo disponível: ${formatMoney(maxBid)}.`; bidInput.setCustomValidity(limitText); bidInput.reportValidity(); return; } bidInput.setCustomValidity(""); const teams = state.teams.map((entry) => entry.name === team ? { ...entry, balance: entry.balance - bid } : entry); saveRoundState({ teams, team, bid, bidDebited: true, confirmed: true, released: true, timerEndsAt: null, timerExpired: false, result: null, winningTeams: [], approximationAnswers: [], approximationBets: [], approximationCalculated: false, valueRevealed: state.valueRevealed }, "confirmar lance final"); renderAuctioneer(); });
+    document.querySelector("#release-question").addEventListener("click", () => { saveRoundState({ released: true }, "liberar rodada de aproximação"); renderAuctioneer(); });
+    document.querySelector("#start-timer").addEventListener("click", () => { const state = readRoundState(); saveRoundState({ timerEndsAt: Date.now() + (state.config.timerSeconds * 1000) + timerSyncGraceMs, timerExpired: false }, "iniciar cronômetro"); renderAuctioneer(); });
     document.querySelectorAll("[data-result]").forEach((button) => button.addEventListener("click", () => { applyResult(button.dataset.result); renderAuctioneer(); }));
     document.querySelector("#confirm-approximation").addEventListener("click", () => { const state = readRoundState(); const answers = [...document.querySelectorAll("[data-approximation-team]")]; const bets = [...document.querySelectorAll("[data-approximation-bet]")]; const invalidAnswer = answers.find((input) => input.value.trim() === "" || !Number.isFinite(Number(input.value))); if (invalidAnswer) { invalidAnswer.setCustomValidity("Registre a resposta desta equipe."); invalidAnswer.reportValidity(); return; } const invalidBet = bets.find((input) => { const balance = Math.floor(state.teams.find((team) => team.name === input.dataset.approximationBet)?.balance || 0); return input.value.trim() === "" || !Number.isInteger(Number(input.value)) || Number(input.value) < 0 || Number(input.value) > balance; }); if (invalidBet) { invalidBet.setCustomValidity("Informe uma aposta inteira entre R$ 0 e o saldo da equipe."); invalidBet.reportValidity(); return; } [...answers, ...bets].forEach((input) => input.setCustomValidity("")); calculateApproximation(); renderAuctioneer(); });
     const revealButton = document.querySelector("#reveal-value");
-    if (revealButton) revealButton.addEventListener("click", () => { const state = readRoundState(); saveRoundState({ valueRevealed: !state.valueRevealed }); renderAuctioneer(); });
+    if (revealButton) revealButton.addEventListener("click", () => { const state = readRoundState(); saveRoundState({ valueRevealed: !state.valueRevealed }, state.valueRevealed ? "ocultar valor do lote" : "revelar valor do lote"); renderAuctioneer(); });
     const approximationReleaseButton = document.querySelector("#release-approximation-result");
     if (approximationReleaseButton) approximationReleaseButton.addEventListener("click", () => { applyApproximationResult(); renderAuctioneer(); });
     const startAnotherGameButton = document.querySelector("#start-another-game");
@@ -701,16 +730,36 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (cancelChooser) cancelChooser.addEventListener("click", () => { const chooser = document.querySelector("[data-next-lot-chooser]"); if (chooser) chooser.hidden = true; });
     const endGameButton = document.querySelector("#end-game");
     if (endGameButton) endGameButton.addEventListener("click", () => endGame());
+    const undoButton = document.querySelector("#undo-last-action");
+    if (undoButton) undoButton.addEventListener("click", () => { if (undoLastRoundAction()) renderAuctioneer(); });
     const teamSummary = document.querySelector("[data-teams-summary-list]");
-    if (teamSummary) teamSummary.addEventListener("click", (event) => {
-      const sacrificeButton = event.target.closest("[data-sacrifice-team]");
-      if (!sacrificeButton) return;
-      const state = readRoundState(); const teamName = sacrificeButton.dataset.sacrificeTeam;
-      const team = state.teams.find((entry) => entry.name === teamName);
-      if (!team || state.gameOver || team.balance !== 0 || team.lots < 1) return;
-      const teams = state.teams.map((entry) => entry.name === teamName ? { ...entry, balance: 500, lots: entry.lots - 1 } : entry);
-      saveRoundState({ teams }); renderAuctioneer();
-    });
+    if (teamSummary) {
+      teamSummary.addEventListener("input", (event) => {
+        const card = event.target.closest(".summary-team"); const editButton = card?.querySelector("[data-edit-team]");
+        if (!card || !editButton) return;
+        const state = readRoundState(); const team = state.teams.find((entry) => entry.name === editButton.dataset.editTeam);
+        const balance = Number(card.querySelector("[data-team-balance]")?.value); const lots = Number(card.querySelector("[data-team-lots]")?.value);
+        editButton.disabled = !team || state.gameOver || !Number.isInteger(balance) || balance < 0 || !Number.isInteger(lots) || lots < 0 || (balance === team.balance && lots === team.lots);
+      });
+      teamSummary.addEventListener("click", (event) => {
+        const editButton = event.target.closest("[data-edit-team]");
+        if (editButton) {
+          const state = readRoundState(); const teamName = editButton.dataset.editTeam; const team = state.teams.find((entry) => entry.name === teamName); const card = editButton.closest(".summary-team");
+          const balance = Number(card?.querySelector("[data-team-balance]")?.value); const lots = Number(card?.querySelector("[data-team-lots]")?.value);
+          if (!team || state.gameOver || !Number.isInteger(balance) || balance < 0 || !Number.isInteger(lots) || lots < 0 || (balance === team.balance && lots === team.lots)) return;
+          if (!window.confirm(`Confirmar ajustes da ${teamName}?\nSaldo: ${formatMoney(team.balance)} → ${formatMoney(balance)}\nLotes: ${team.lots} → ${lots}`)) return;
+          const teams = state.teams.map((entry) => entry.name === teamName ? { ...entry, balance, lots } : entry);
+          saveRoundState({ teams }, `editar saldo e lotes da ${teamName}`); renderAuctioneer(); return;
+        }
+        const sacrificeButton = event.target.closest("[data-sacrifice-team]");
+        if (!sacrificeButton) return;
+        const state = readRoundState(); const teamName = sacrificeButton.dataset.sacrificeTeam; const team = state.teams.find((entry) => entry.name === teamName);
+        if (!team || state.gameOver || team.balance >= 100 || team.lots < 1) return;
+        if (!window.confirm(`Sacrificar 1 lote da ${teamName} e adicionar R$ 500 ao saldo?`)) return;
+        const teams = state.teams.map((entry) => entry.name === teamName ? { ...entry, balance: entry.balance + 500, lots: entry.lots - 1 } : entry);
+        saveRoundState({ teams }, `sacrificar lote da ${teamName}`); renderAuctioneer();
+      });
+    }
   }
   const retryPublicConnection = document.querySelector("#retry-public-connection");
   if (retryPublicConnection) retryPublicConnection.addEventListener("click", () => initialiseStateSync());
