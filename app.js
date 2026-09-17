@@ -336,7 +336,7 @@ function renderAuctioneer() {
   if (startAnotherGameButton) startAnotherGameButton.hidden = !state.gameOver;
   if (approximationReleaseButton) approximationReleaseButton.hidden = !state.approximationCalculated || Boolean(state.result) || state.gameOver;
   if (endPanel) endPanel.hidden = state.gameOver;
-  if (endGameButton) endGameButton.disabled = state.gameOver || (!state.result && !state.catalogExhausted);
+  if (endGameButton) endGameButton.disabled = state.gameOver;
   if (catalogLoadError) { status.textContent = "Catálogo indisponível"; message.textContent = "Não foi possível carregar as questões. Inicie pelo servidor local."; return; }
   if (noRound) { status.textContent = "Catálogo esgotado"; message.textContent = "Não há mais perguntas disponíveis. Adicione novas questões ao catálogo para continuar."; displays.forEach((element) => { element.textContent = formatTime(state.config.timerSeconds); }); return; }
   if (state.gameOver) { status.textContent = "Partida encerrada"; message.textContent = "Acompanhe o ranking final no Painel da disputa."; displays.forEach((element) => { element.textContent = formatTime(state.config.timerSeconds); }); return; }
@@ -632,7 +632,6 @@ function startSelectedLot(filter) {
 
 function endGame() {
   const state = readRoundState();
-  if (!state.result && !state.catalogExhausted) return;
   if (!window.confirm("Encerrar a partida e exibir o ranking final?")) return;
   saveRoundState({ gameOver: true, standings: computeFinalStandings(state) }, "encerrar partida");
   const chooser = document.querySelector("[data-next-lot-chooser]"); if (chooser) chooser.hidden = true;
