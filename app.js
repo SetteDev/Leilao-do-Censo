@@ -14,10 +14,11 @@ let catalogLoadError = false;
 let pendingLotFilter = null;
 let syncStatus = "connecting";
 let syncVersion = 0;
+let syncSessionId = "";
 let stateStream = null;
 let statePublishQueue = Promise.resolve();
 let publicPresentationState = null;
-const roundHeartbeatInterval = 5 * 60 * 1000;
+const roundHeartbeatInterval = 15 * 1000;
 const questions = () => questionCatalog;
 const isApproximation = (question) => question?.modalidade === "aproximacao";
 const isAuctionQuestion = (question) => question && !isApproximation(question);
@@ -93,8 +94,16 @@ function setSyncStatus(status) {
   renderSyncStatus();
 }
 
+function registerSyncSession(payload) {
+  const sessionId = String(payload?.sessionId || "");
+  if (!sessionId) return;
+  if (syncSessionId && syncSessionId !== sessionId) syncVersion = 0;
+  syncSessionId = sessionId;
+}
+
 function applySharedRoundState(payload) {
   if (!payload?.state || typeof payload.state !== "object") return;
+  registerSyncSession(payload);
   const version = Number(payload.version) || 0;
   if (version && version < syncVersion) return;
   syncVersion = Math.max(syncVersion, version);
@@ -114,6 +123,7 @@ function queueRoundStatePublish(state) {
       });
       if (!response.ok) throw new Error("Não foi possível atualizar o painel público.");
       const payload = await response.json();
+      registerSyncSession(payload);
       syncVersion = Math.max(syncVersion, Number(payload.version) || 0);
       setSyncStatus("connected");
     })
@@ -132,6 +142,7 @@ function keepRoundConnectionAlive() {
     fetch("/api/state", { cache: "no-store" })
       .then((response) => response.ok ? response.json() : Promise.reject())
       .then((payload) => {
+        registerSyncSession(payload);
         if (payload.state) applySharedRoundState(payload);
         else restoreAuctioneerStateIfNeeded(payload);
       })
@@ -145,6 +156,7 @@ async function initialiseStateSync() {
     const response = await fetch("/api/state", { cache: "no-store" });
     if (!response.ok) throw new Error("Estado indisponível");
     const payload = await response.json();
+    registerSyncSession(payload);
     syncVersion = Number(payload.version) || 0;
     if (payload.state) applySharedRoundState(payload);
     setSyncStatus("connected");
@@ -153,6 +165,7 @@ async function initialiseStateSync() {
     stateStream.addEventListener("state", (event) => {
       try {
         const payload = JSON.parse(event.data);
+        registerSyncSession(payload);
         if (payload.state) applySharedRoundState(payload);
         else restoreAuctioneerStateIfNeeded(payload);
         setSyncStatus("connected");

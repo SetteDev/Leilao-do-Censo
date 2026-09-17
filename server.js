@@ -13,6 +13,7 @@ const mimeTypes = {
 };
 let sharedRoundState = null;
 let sharedRoundVersion = 0;
+const stateSessionId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const stateClients = new Set();
 
 function unquote(value) {
@@ -69,7 +70,7 @@ function sendJson(response, status, payload) {
 }
 
 function statePayload() {
-  return { version: sharedRoundVersion, state: sharedRoundState };
+  return { sessionId: stateSessionId, version: sharedRoundVersion, state: sharedRoundState };
 }
 
 function broadcastState() {
